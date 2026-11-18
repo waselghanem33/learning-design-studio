@@ -101,3 +101,15 @@ body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
 #alignment-root select{padding:9px 12px;border:1px solid #bdcfd9;border-radius:9px;max-width:100%;min-width:220px}
 #alignment-root #al-status{color:#116f59}
 @media(max-width:700px){#alignment-root .al-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#alignment-root .al-section{padding:15px}#alignment-root .al-bar{grid-template-columns:105px minmax(40px,1fr) 38px;font-size:11px}}
+
+
+/* v1.5.1 explicit LO details and editable Bloom levels */
+#alignment-root .al-lo-button{border:1px solid #bfdce0;border-radius:8px;background:#fff;color:#086f78;padding:7px 11px;font-weight:750;cursor:pointer}
+#alignment-root .al-lo-button:hover,#alignment-root .al-lo-button:focus-visible{background:#dff3f3;outline:2px solid #087f86;outline-offset:2px}
+#alignment-root .al-outcome-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,250px);gap:15px;align-items:center;border-bottom:1px solid #dce6ec;padding:12px 4px;border-radius:6px}
+#alignment-root .al-outcome-detail>div{display:flex;gap:10px;align-items:baseline;min-width:0}
+#alignment-root .al-outcome-detail strong{white-space:nowrap;color:#086f78}
+#alignment-root .al-outcome-detail label{display:grid;gap:5px;font-size:12px;color:#4a6372}
+#alignment-root .al-outcome-detail select{min-width:0;width:100%;font-size:14px}
+#alignment-root .al-highlight{background:#dff5f3;box-shadow:0 0 0 2px #087f86}
+@media(max-width:700px){#alignment-root .al-outcome-detail{grid-template-columns:1fr}}
