@@ -3,8 +3,8 @@ import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 
 const html = fs.readFileSync('index.html','utf8');
-const scripts = [...html.matchAll(/<script\\b[^>]*\\bsrc=["']([^"']+)["']/g)].map(m=>m[1].split('?')[0].replace(/^\\.\\//,''));
-const css = [...html.matchAll(/<link\\b[^>]*\\bhref=["']([^"']+\\.css(?:\\?[^"']*)?)["']/g)].map(m=>m[1].split('?')[0].replace(/^\\.\\//,''));
+const scripts = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/g)].map(m=>m[1].split('?')[0].replace(/^\.\//,''));
+const css = [...html.matchAll(/<link\b[^>]*\bhref=["']([^"']+\.css(?:\?[^"']*)?)["']/g)].map(m=>m[1].split('?')[0].replace(/^\.\//,''));
 assert(scripts.length >= 5, 'Expected core and feature scripts');
 assert(css.length > 0, 'Expected stylesheet');
 for(const p of [...scripts,...css]) assert(fs.existsSync(p), 'Missing asset: '+p);
