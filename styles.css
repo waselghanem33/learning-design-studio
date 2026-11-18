@@ -55,3 +55,12 @@ body[dir="rtl"] #ai-coach-root .ai-step,body[dir="rtl"] #ai-coach-root .ai-mode-
 body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
 .nav{row-gap:10px}
 @media(max-width:760px){.nav button{flex:1 1 auto;justify-content:center}}
+
+/* v1.4 human-first AI suggestions */
+#ai-coach-root .ai-select{display:flex;align-items:flex-start;gap:12px;text-align:start;padding:12px 14px;border:1px solid #d3e3e5;border-radius:11px;background:#fff;margin:8px 0;cursor:pointer}
+#ai-coach-root .ai-select input{width:18px;height:18px;flex:0 0 18px;margin:3px 0 0;accent-color:#087f86}
+#ai-coach-root .ai-select span{display:grid;gap:4px;min-width:0}
+#ai-coach-root .ai-select small{font-size:13px;color:#506879}
+#ai-coach-root .ai-activity-list{display:grid;gap:4px}
+#ai-coach-root #ai-prompt{direction:auto;text-align:start;font-family:inherit;font-size:14px;white-space:pre-wrap;line-height:1.75}
+#ai-coach-root #ai-response{direction:auto;text-align:start;font-family:inherit;font-size:14px}
