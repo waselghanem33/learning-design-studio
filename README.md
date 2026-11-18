@@ -14,6 +14,15 @@ An open-source bilingual (English/Arabic) interactive instructional design train
 - Browser local storage, JSON import/export, print-to-PDF, checklist and facilitator schedule downloads.
 - Arabic RTL and English LTR interfaces.
 
+## New interactive workshop features (November 2026)
+
+- **Scenarios / السيناريوهات:** Four bilingual multiple-choice instructional design cases with immediate explanatory feedback.
+- **My Progress / تقدمي:** Five guided challenges and a module-readiness checklist, stored in the browser.
+- **Portfolio / ملف الإنجاز:** Download a Markdown teaching portfolio combining outcomes, activities, learning-type distribution, peer-review scores, feedback, and scenario progress.
+- **Training materials:** `training/facilitator-guide.md` and `training/participant-workbook.md`.
+
+The scenario scores, challenge completion, and draft module are local to each browser; there is no cross-device synchronization or Moodle integration.
+
 ## Getting started
 
 Open `index.html` in a browser. No installation, backend or API key required.
