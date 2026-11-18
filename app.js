@@ -65,6 +65,7 @@ function portfolio(){
 let lang=localStorage.getItem("lds-language")==="ar"?"ar":"en",page="home";
 const empty=()=>({course:"",module:"",discipline:"law",problem:"",outcomes:"",duration:90,activities:[]});
 let design=empty();try{const d=JSON.parse(localStorage.getItem("lds-design"));if(d&&Array.isArray(d.activities))design=d}catch{}
+window.LDSReloadDesign=()=>{try{const d=JSON.parse(localStorage.getItem("lds-design")||"null");if(d&&Array.isArray(d.activities)){design=d;page="lab";render();return true}}catch{}return false};
 let ratings=[3,3,3,3,3,3],feedback="";
 const $=id=>document.getElementById(id),tr=k=>WORDS[lang][k],dual=(en,ar)=>lang==="ar"?ar:en;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
