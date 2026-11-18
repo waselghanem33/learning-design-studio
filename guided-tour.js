@@ -28,7 +28,7 @@ function remove(){
 }
 function close(completed){
  open=false;remove();
- if(completed)localStorage.setItem(DONE,"yes");
+ localStorage.setItem(DONE,completed?"completed":"dismissed");
  if(previousFocus&&document.contains(previousFocus))previousFocus.focus();
  previousFocus=null;
 }
