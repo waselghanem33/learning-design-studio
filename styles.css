@@ -45,3 +45,13 @@
 #ai-coach-root .ai-activity-list>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border-bottom:1px solid #d9eae5;padding:10px 0}
 #ai-coach-root .ai-activity-list span{font-size:13px;color:#536a75}
 @media(max-width:640px){#ai-coach-root .ai-hero{padding:22px}#ai-coach-root .ai-hero-symbol{display:none}#ai-coach-root .ai-section{padding:17px}#ai-coach-root .ai-mode-grid{grid-template-columns:1fr}#ai-coach-root .ai-actions .btn{justify-content:center}}
+
+/* RTL/LTR isolation and accessible navigation */
+#ai-coach-root #ai-prompt,#ai-coach-root #ai-response{direction:ltr!important;text-align:left!important;unicode-bidi:plaintext}
+#ai-coach-root .ai-mode-card{direction:inherit;min-width:0}
+#ai-coach-root .ai-mode-card span:last-child{min-width:0}
+#ai-coach-root .ai-mode-card strong,#ai-coach-root .ai-mode-card small{overflow-wrap:anywhere}
+body[dir="rtl"] #ai-coach-root .ai-step,body[dir="rtl"] #ai-coach-root .ai-mode-card{text-align:right}
+body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
+.nav{row-gap:10px}
+@media(max-width:760px){.nav button{flex:1 1 auto;justify-content:center}}
