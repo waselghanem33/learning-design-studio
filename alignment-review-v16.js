@@ -85,6 +85,7 @@ function inject(){
  $("v16-export").onclick=()=>download(exportReport(d,audit(d,read("lds-v15-align",{links:{}}).links||{},read("lds-v15-align",{bloom:{}}).bloom||{})));
  $("v16-refresh").onclick=()=>{section.remove();inject()};
 }
+window.LDSV16Inject=inject;
 const old=window.LDSAlignment;
 if(!old||typeof old.render!=="function")return;
 const base=old.render.bind(old);
