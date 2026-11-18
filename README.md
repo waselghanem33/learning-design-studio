@@ -1,3 +1,15 @@
+## v1.5 — Learning Alignment Studio
+
+A bilingual **Alignment studio / استوديو المواءمة** tab provides:
+
+- An instructor-confirmed outcome–activity matrix (links are not inferred or graded by AI).
+- Transparent structural checks for unlinked outcomes/activities, missing assessment descriptions, timing discrepancies and learning-type variety.
+- Six learning-type time distribution bars.
+- Browser-local instructor reflections and Markdown alignment report export.
+- Up to 20 snapshots for before/after comparison of structural indicators.
+
+The evaluation is descriptive, **not** a validated measure of learning quality or effectiveness. All mapping and snapshots are stored in browser local storage. This release does not connect to Moodle or send data to an AI service.
+
 # Learning Design Studio
 
 An open-source bilingual (English/Arabic) interactive instructional design training toolkit for university instructors.
