@@ -23,6 +23,14 @@ An open-source bilingual (English/Arabic) interactive instructional design train
 
 The scenario scores, challenge completion, and draft module are local to each browser; there is no cross-device synchronization or Moodle integration.
 
+## v1.3 — AI Learning Design Coach
+
+The **AI Coach / المدرب الذكي** tab provides five modes: outcomes, activities, assessment, critical review and Socratic coaching. It constructs a bilingual prompt from the locally saved module. Instructors review the prompt before copying it to their own ChatGPT account. The site makes **no API requests** and does **not** embed an API key.
+
+To import a response, request the JSON code block shown in the prompt, paste it into the AI Coach, validate the schema, inspect the preview and explicitly approve application. Export a JSON backup before replacing activities. Reload the design laboratory after approval to see the imported design. The reflection is saved locally in the browser.
+
+**Privacy:** The generated prompt contains the module text; remove student, patient and confidential information before sharing with an external AI provider. AI-generated pedagogical advice must be checked by the instructor.
+
 ## Getting started
 
 Open `index.html` in a browser. No installation, backend or API key required.
