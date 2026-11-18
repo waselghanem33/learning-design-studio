@@ -113,3 +113,19 @@ body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
 #alignment-root .al-outcome-detail select{min-width:0;width:100%;font-size:14px}
 #alignment-root .al-highlight{background:#dff5f3;box-shadow:0 0 0 2px #087f86}
 @media(max-width:700px){#alignment-root .al-outcome-detail{grid-template-columns:1fr}}
+
+
+/* v1.6 constructive alignment review */
+#alignment-root .v16-section{border:1px solid #b9d6db}
+#alignment-root .v16-intro{border-bottom:1px solid #dce8ed;padding-bottom:12px;margin-bottom:14px}
+#alignment-root .v16-intro small{font-weight:700;color:#087f86}
+#alignment-root .v16-outcome{background:#f7fafb;border:1px solid #dbe6ea;border-radius:12px;padding:17px;margin:14px 0}
+#alignment-root .v16-head{display:flex;align-items:start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#alignment-root .v16-head h3{margin:0;flex:1;font-size:17px}
+#alignment-root .v16-head span{background:#e1f0f1;border-radius:30px;padding:5px 11px;color:#145763;font-size:12px}
+#alignment-root .v16-muted{font-size:13px;color:#566d7a}
+#alignment-root .v16-prompts{border-inline-start:3px solid #c9a05c;padding:5px 12px;margin:13px 0;background:#fffaf0}
+#alignment-root .v16-prompts p{margin:6px 0}
+#alignment-root .v16-outcome>label:not(.v16-confirm){display:block;font-weight:600;margin-top:10px}
+#alignment-root .v16-confirm{display:flex;align-items:center;gap:9px;margin:10px 0}
+#alignment-root .v16-confirm input{width:18px;height:18px;accent-color:#087f86}
