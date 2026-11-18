@@ -64,3 +64,40 @@ body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
 #ai-coach-root .ai-activity-list{display:grid;gap:4px}
 #ai-coach-root #ai-prompt{direction:auto;text-align:start;font-family:inherit;font-size:14px;white-space:pre-wrap;line-height:1.75}
 #ai-coach-root #ai-response{direction:auto;text-align:start;font-family:inherit;font-size:14px}
+
+
+/* v1.5 alignment studio */
+#alignment-root{max-width:1100px;margin:auto;line-height:1.6}
+#alignment-root .al-hero{background:linear-gradient(115deg,#16334a,#087f86);color:white;padding:28px 32px;border-radius:17px;margin-bottom:16px}
+#alignment-root .al-hero h1{font-size:clamp(25px,3vw,35px);margin:6px 0}
+#alignment-root .al-hero p{color:#e2f3f1;margin:0}
+#alignment-root .al-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+#alignment-root .al-stats>div{display:grid;gap:4px;background:#eaf3f5;border:1px solid #d3e5e8;border-radius:12px;padding:13px}
+#alignment-root .al-stats strong{font-size:22px;color:#123b4c}
+#alignment-root .al-stats span{font-size:12px;color:#536e7c}
+#alignment-root .al-section{padding:22px;margin-bottom:16px}
+#alignment-root .al-section h2{margin-top:0;font-size:21px}
+#alignment-root .al-scroll{overflow-x:auto;border:1px solid #dce6ec;border-radius:12px;margin:14px 0}
+#alignment-root .al-matrix{border-collapse:collapse;width:100%;min-width:420px}
+#alignment-root .al-matrix th,#alignment-root .al-matrix td{padding:11px;border-bottom:1px solid #e2e9ee;text-align:center}
+#alignment-root .al-matrix th:first-child{text-align:start;min-width:180px}
+#alignment-root .al-matrix thead{background:#e8f2f4}
+#alignment-root .al-matrix th small{display:block;font-weight:400;color:#617787}
+#alignment-root .al-cell{display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer}
+#alignment-root .al-cell input{width:18px;height:18px;accent-color:#087f86}
+#alignment-root .al-cell span{font-size:17px;color:#087f86}
+#alignment-root .al-outcomes{padding:10px 14px;background:#f6fafb;border-radius:10px}
+#alignment-root .al-outcomes p{margin:8px 0}
+#alignment-root .al-outcomes span{color:#627987}
+#alignment-root .al-issues{border:1px solid #ecd9a9;background:#fff9eb;border-radius:10px;padding:8px 15px}
+#alignment-root .al-issues p{margin:8px 0}
+#alignment-root .al-good{background:#e8f6ef;color:#166747;padding:12px;border-radius:10px}
+#alignment-root .al-bar{display:grid;grid-template-columns:140px minmax(60px,1fr) 48px;gap:10px;align-items:center;margin:10px 0;font-size:13px}
+#alignment-root .al-bar>div{background:#e5edf1;height:11px;border-radius:99px;overflow:hidden}
+#alignment-root .al-bar i{display:block;height:100%;background:#087f86;border-radius:99px}
+#alignment-root .al-bar strong{text-align:end}
+#alignment-root textarea{display:block;width:100%;border:1px solid #c3d4dd;border-radius:10px;padding:12px;margin:10px 0 14px}
+#alignment-root .al-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+#alignment-root select{padding:9px 12px;border:1px solid #bdcfd9;border-radius:9px;max-width:100%;min-width:220px}
+#alignment-root #al-status{color:#116f59}
+@media(max-width:700px){#alignment-root .al-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#alignment-root .al-section{padding:15px}#alignment-root .al-bar{grid-template-columns:105px minmax(40px,1fr) 38px;font-size:11px}}
