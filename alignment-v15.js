@@ -104,6 +104,7 @@
       $("al-comparison").innerHTML='<div class="al-scroll"><table class="al-matrix"><thead><tr><th>'+tr("Indicator","المؤشر")+'</th><th>'+tr("Before","قبل")+'</th><th>'+tr("Now","الآن")+'</th></tr></thead><tbody>'+values.map(v=>'<tr><th>'+v[0]+'</th><td>'+v[1]+'</td><td>'+v[2]+'</td></tr>').join("")+'</tbody></table></div><p>'+tr("Counts are descriptive and do not prove improved learning.","الأعداد وصفية ولا تثبت تحسن التعلم.")+'</p>';
     };
     $("al-delete").onclick=()=>{const idx=$("al-compare").value;if(idx==="")return;if(!confirm(tr("Delete this snapshot?","حذف هذه النسخة؟")))return;snapshots.splice(Number(idx),1);write(SNAP,snapshots);render();};
+    if (typeof window.LDSV16Inject === "function") window.LDSV16Inject();
   }
-  window.LDSAlignment={render,version:"1.5.0",report:()=>report(getDesign(),linksFor(getDesign()))};
+  window.LDSAlignment={render,version:"1.6.0",report:()=>report(getDesign(),linksFor(getDesign()))};
 })();
