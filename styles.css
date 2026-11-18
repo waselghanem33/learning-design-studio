@@ -129,3 +129,23 @@ body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
 #alignment-root .v16-outcome>label:not(.v16-confirm){display:block;font-weight:600;margin-top:10px}
 #alignment-root .v16-confirm{display:flex;align-items:center;gap:9px;margin:10px 0}
 #alignment-root .v16-confirm input{width:18px;height:18px;accent-color:#087f86}
+
+
+/* Bilingual in-app user guide */
+#manual-root{max-width:1120px;margin:auto}
+#manual-root .manual-hero{background:linear-gradient(120deg,#112a42,#087f86);border-radius:16px;color:#fff;padding:30px;margin-bottom:16px}
+#manual-root .manual-hero h1{font-size:clamp(24px,3vw,34px);margin:6px 0}
+#manual-root .manual-hero p{color:#e2f4f4}
+#manual-root .manual-hero .btn{background:#fff;color:#15475a;border:0}
+#manual-root .manual-route{padding:20px;margin-bottom:18px}
+#manual-root .manual-route-buttons{display:flex;gap:8px;flex-wrap:wrap}
+#manual-root .manual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#manual-root .manual-step{padding:20px;display:flex;gap:14px;align-items:flex-start}
+#manual-root .manual-step h2{font-size:19px;margin:0 0 8px}
+#manual-root .manual-step p{margin:8px 0}
+#manual-root .manual-number{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#dff1f1;color:#087f86;font-weight:800}
+#manual-root .manual-instruction{color:#365362}
+#manual-root .manual-faq{padding:22px;margin-top:16px}
+#manual-root .manual-faq details{padding:12px 0;border-bottom:1px solid #dce5e9}
+#manual-root .manual-faq summary{font-weight:700;cursor:pointer}
+@media(max-width:740px){#manual-root .manual-grid{grid-template-columns:1fr}#manual-root .manual-hero{padding:20px}}
