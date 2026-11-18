@@ -13,6 +13,9 @@
   const outcomeKey = (x,i) => i + "|" + x;
   const activityKey = (x,i) => i + "|" + String(x.title || "");
   let state = read(KEY, {links:{}, notes:{}}), snapshots = read(SNAP, []);
+  if (!state.bloom || typeof state.bloom !== "object") state.bloom = {};
+  const BLOOM = [["remember","Remember","التذكر"],["understand","Understand","الفهم"],["apply","Apply","التطبيق"],["analyze","Analyze","التحليل"],["evaluate","Evaluate","التقييم"],["create","Create","الإبداع"]];
+  const bloomKey = (d,o,i) => String(d.module||"")+"::"+outcomeKey(o,i);
   function linksFor(d) {
     const allowed = new Set(outcomes(d).map(outcomeKey)), result = {};
     activities(d).forEach((a,i) => {
@@ -35,7 +38,7 @@
   function report(d, links) {
     const m = metrics(d,links), os = outcomes(d), as = activities(d);
     const lines = ["# Learning Design Alignment Report / تقرير مواءمة تصميم التعلم","","Module: "+(d.module||""),"Course: "+(d.course||""),"","## Outcomes / المخرجات"];
-    os.forEach((o,i) => lines.push("LO"+(i+1)+": "+o+" ("+m.linked[i]+" linked activities)"));
+    os.forEach((o,i) => lines.push("LO"+(i+1)+": "+o+" | Bloom: "+(state.bloom[bloomKey(d,o,i)]||"Not assigned")+" ("+m.linked[i]+" linked activities)"));
     lines.push("","## Activities / الأنشطة");
     as.forEach((a,i) => lines.push("- "+(a.title||"Untitled")+" → "+(links[activityKey(a,i)]||[]).map(k=>"LO"+(Number(k.split("|")[0])+1)).join(", ")));
     lines.push("","## Structural checks","Unlinked activities: "+m.unlinked,"Missing assessment descriptions: "+m.unassessed,"Learning types: "+m.types.join(", "),"Total minutes: "+m.total+" / "+m.duration,"","## Instructor reflection",state.notes[d.module||""]||"","These are descriptive checks and instructor-confirmed links, not automated evidence of learning effectiveness.");
@@ -57,21 +60,25 @@
     if (m.unassessed) issues.push(m.unassessed+" "+tr("activities have no assessment description.","أنشطة دون وصف للتقييم."));
     if (m.duration && m.total !== m.duration) issues.push(tr("Time mismatch: ","اختلاف الوقت: ")+m.total+" / "+m.duration+" min");
     if (m.types.length < 3) issues.push(tr("Consider whether more learning-type variety supports the outcomes.","تأمل ما إذا كان تنويع أنواع التعلم يخدم المخرجات."));
+    const bloomOptions = BLOOM.map(x=>'<option value="'+x[0]+'">'+tr(x[1],x[2])+'</option>').join("");
+    const outcomeDetails = os.map((o,i)=>'<div class="al-outcome-detail"><div><strong>LO'+(i+1)+'</strong><span>'+esc(o)+'</span></div><label>'+tr("Bloom cognitive level (instructor-selected)","مستوى بلوم المعرفي (يحدده المدرس)")+'<select data-al-bloom="'+i+'"><option value="">'+tr("Not yet assigned","لم يُحدد بعد")+'</option>'+BLOOM.map(x=>'<option value="'+x[0]+'" '+(state.bloom[bloomKey(d,o,i)]===x[0]?"selected":"")+'>'+tr(x[1],x[2])+'</option>').join("")+'</select></label></div>').join("");
     const matrix = os.length && as.length ?
       '<div class="al-scroll"><table class="al-matrix"><thead><tr><th>'+tr("Activity","النشاط")+'</th>'+
-      os.map((o,i)=>'<th title="'+esc(o)+'">LO'+(i+1)+'</th>').join("")+
+      os.map((o,i)=>'<th><button type="button" class="al-lo-button" data-al-focus="'+i+'" title="'+esc(o)+'" aria-label="'+esc('LO'+(i+1)+': '+o)+'">LO'+(i+1)+'</button></th>').join("")+
       '</tr></thead><tbody>'+as.map((a,j)=>'<tr><th>'+esc(a.title||tr("Untitled","دون عنوان"))+'<small>'+esc(a.phase||"")+' · '+esc(a.type||"")+'</small></th>'+
       os.map((o,i)=>{const checked=(links[activityKey(a,j)]||[]).includes(outcomeKey(o,i));return '<td><label class="al-cell"><input type="checkbox" data-al-row="'+j+'" data-al-col="'+i+'" '+(checked?"checked":"")+' aria-label="'+esc((a.title||"Activity")+" LO"+(i+1))+'"><span>'+(checked?"✓":"·")+'</span></label></td>';}).join("")+'</tr>').join("")+'</tbody></table></div>'+
-      '<div class="al-outcomes">'+os.map((o,i)=>'<p><strong>LO'+(i+1)+'</strong> '+esc(o)+' <span>('+m.linked[i]+')</span></p>').join("")+'</div>' :
+      '<div class="al-outcomes"><h3>'+tr("Learning outcomes and Bloom levels","مخرجات التعلم ومستويات بلوم")+'</h3>'+outcomeDetails+'</div>' :
       '<p class="warning">'+tr("Create a module with outcomes and activities first.","أنشئ وحدة بمخرجات وأنشطة أولاً.")+'</p>';
     root.innerHTML = '<div class="al-hero"><small>'+tr("Learning Design Studio · v1.5","استوديو تصميم التعلم · الإصدار 1.5")+'</small><h1>'+tr("Learning Alignment Studio","استوديو مواءمة التعلم")+'</h1><p>'+tr("Connect outcomes, activities and assessment with instructor-confirmed evidence.","اربط المخرجات والأنشطة والتقييم بأدلة يراجعها المدرس.")+'</p></div>'+
       '<div class="al-stats">'+[[os.length,tr("Outcomes","المخرجات")],[as.length,tr("Activities","الأنشطة")],[m.types.length+"/6",tr("Learning types","أنواع التعلم")],[m.total+" / "+(m.duration||"—"),tr("Minutes","الدقائق")]].map(x=>'<div><strong>'+x[0]+'</strong><span>'+x[1]+'</span></div>').join("")+'</div>'+
-      '<section class="card al-section"><h2>1. '+tr("Outcome–activity alignment matrix","مصفوفة مواءمة المخرجات والأنشطة")+'</h2><p>'+tr("Check each link you can justify. Links are instructor judgments, not AI-generated scores.","حدد كل ارتباط تستطيع تبريره. الروابط أحكام المدرس وليست درجات آلية.")+'</p>'+matrix+'</section>'+
+      '<section class="card al-section"><h2>1. '+tr("Outcome–activity alignment matrix","مصفوفة مواءمة المخرجات والأنشطة")+'</h2><p><strong>LO = Learning Outcome ('+tr('learning outcome','مخرج التعلم')+').</strong> '+tr('LO1 and LO2 are outcome numbers, not levels. Select a Bloom level below each outcome. Click an LO heading to see its full text.','LO1 وLO2 ترقيم للمخرجات وليسا مستويات. اختر مستوى بلوم أسفل كل مخرج واضغط عنوان LO لعرض نصه كاملاً.')+'</p><p>'+tr("Check each link you can justify. Links are instructor judgments, not AI-generated scores.","حدد كل ارتباط تستطيع تبريره. الروابط أحكام المدرس وليست درجات آلية.")+'</p>'+matrix+'</section>'+
       '<section class="card al-section"><h2>2. '+tr("Design quality checks","فحوص جودة التصميم")+'</h2><p>'+tr("These structural indicators suggest questions, not definitive judgments.","هذه مؤشرات بنيوية تثير أسئلة وليست أحكاماً نهائية.")+'</p>'+
       (issues.length?'<div class="al-issues">'+issues.map(x=>'<p>⚠ '+esc(x)+'</p>').join("")+'</div>':'<p class="al-good">'+tr("No structural gaps detected. Peer review is still recommended.","لم تُكتشف فجوات بنيوية. لا تزال مراجعة الأقران مهمة.")+'</p>')+
       '<h3>'+tr("Learning-type distribution","توزيع أنواع التعلم")+'</h3>'+TYPES.map(type=>{const n=as.filter(a=>a.type===type).reduce((sum,a)=>sum+(Number(a.minutes)||0),0),pct=m.total?Math.round(n/m.total*100):0;return '<div class="al-bar"><span>'+type+'</span><div><i style="width:'+pct+'%"></i></div><strong>'+n+'m</strong></div>';}).join("")+'</section>'+
       '<section class="card al-section"><h2>3. '+tr("Instructor reflection and export","تأمل المدرس والتصدير")+'</h2><label for="al-notes">'+tr("Explain changes you would make and why.","اشرح التعديلات التي ستجريها ولماذا.")+'</label><textarea id="al-notes" rows="4">'+esc(state.notes[d.module||""]||"")+'</textarea><div class="al-actions"><button class="btn primary" id="al-save">'+tr("Save reflection","حفظ التأمل")+'</button><button class="btn" id="al-snapshot">'+tr("Save before/after snapshot","حفظ نسخة للمقارنة")+'</button><button class="btn" id="al-export">'+tr("Download report","تنزيل التقرير")+'</button></div><p id="al-status" role="status"></p></section>'+
       '<section class="card al-section"><h2>4. '+tr("Before-and-after comparison","مقارنة التصميم قبل وبعد")+'</h2><p>'+tr("Save a snapshot before editing the module, then compare it with your current design.","احفظ نسخة قبل تعديل الوحدة ثم قارنها بالتصميم الحالي.")+'</p><div class="al-actions"><select id="al-compare"><option value="">'+tr("Select saved snapshot","اختر نسخة محفوظة")+'</option>'+snapshots.map((x,i)=>'<option value="'+i+'">'+esc(x.label)+'</option>').join("")+'</select><button class="btn" id="al-delete">'+tr("Delete selected snapshot","حذف النسخة المختارة")+'</button></div><div id="al-comparison"></div></section>';
+    root.querySelectorAll("[data-al-focus]").forEach(button=>button.onclick=()=>{const el=root.querySelectorAll(".al-outcome-detail")[Number(button.dataset.alFocus)];if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.add("al-highlight");setTimeout(()=>el.classList.remove("al-highlight"),1800);}});
+    root.querySelectorAll("[data-al-bloom]").forEach(select=>select.onchange=()=>{const i=Number(select.dataset.alBloom);state.bloom[bloomKey(d,os[i],i)]=select.value;write(KEY,state);});
     root.querySelectorAll("[data-al-row]").forEach(input=>input.onchange=()=>{
       const j=Number(input.dataset.alRow),i=Number(input.dataset.alCol),k=activityKey(as[j],j),v=outcomeKey(os[i],i);
       const vals=(state.links[k]||[]).filter(x=>x!==v); if(input.checked)vals.push(v);state.links[k]=vals;write(KEY,state);render();
