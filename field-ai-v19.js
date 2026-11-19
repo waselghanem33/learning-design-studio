@@ -81,28 +81,97 @@ function mount(d,lang){
 }
 
 // One consolidated activity-level coaching action, without changing any fields automatically.
+// Activity-level coach: a guided, human-approved review workflow.
 function mountActivityCoach(d,lang){
+ const t=(en,ar)=>choose(lang,en,ar);
+ const keys=["title","phase","type","minutes","group","mode","teacher","resource","assessment"];
+ const labels={title:["Activity title","عنوان النشاط"],phase:["Phase","المرحلة"],type:["Learning type","نوع التعلم"],minutes:["Minutes","الدقائق"],group:["Group size","حجم المجموعة"],mode:["Delivery mode","نمط التدريس"],teacher:["Teacher role","دور المعلم"],resource:["Resources and instructions","الموارد والتعليمات"],assessment:["Assessment and feedback","التقييم والتغذية الراجعة"]};
+ const allowedPhase=["before","during","after"];
+ const allowedTypes=["Acquisition","Inquiry","Discussion","Practice","Collaboration","Production"];
  document.querySelectorAll(".activity").forEach((card,i)=>{
   const header=card.querySelector(".row");if(!header||header.querySelector(".lds-activity-coach"))return;
-  const btn=document.createElement("button");btn.type="button";btn.className="btn lds-activity-coach";btn.textContent=choose(lang,"✨ Improve activity","✨ تحسين النشاط");const deleteButton=header.querySelector("[data-delete]");if(deleteButton)header.insertBefore(btn,deleteButton);else header.appendChild(btn);
+  const btn=document.createElement("button");btn.type="button";btn.className="btn lds-activity-coach";btn.textContent=t("✨ Improve activity","✨ تحسين النشاط");
+  const del=header.querySelector("[data-delete]");if(del)header.insertBefore(btn,del);else header.appendChild(btn);
   const panel=document.createElement("section");panel.className="card lds-field-ai-panel lds-activity-review";panel.hidden=true;card.insertBefore(panel,card.querySelector(".grid"));
-  btn.onclick=()=>{panel.hidden=!panel.hidden;if(panel.hidden)return;
+  btn.onclick=()=>{
+   panel.hidden=!panel.hidden;if(panel.hidden)return;
    const a=d.activities[i];panel.replaceChildren();
-   const h=document.createElement("h3");h.textContent=choose(lang,"AI Activity Design Coach","مساعد تحسين تصميم النشاط");panel.appendChild(h);
-   const intro=document.createElement("p");intro.textContent=choose(lang,"Review learning type, phase, time, grouping, delivery, teacher role, resources and assessment together. Suggestions are advisory; no field is overwritten.","راجع نوع التعلم والمرحلة والوقت والمجموعات ونمط التدريس ودور المعلم والموارد والتقييم معاً. الاقتراحات استشارية ولا تستبدل الحقول.");panel.appendChild(intro);
-   const prompt=document.createElement("textarea");prompt.rows=8;prompt.value=[
-    "Act as a university learning design coach using UCL's six learning types. Respond in "+(lang==="ar"?"Arabic":"English")+".",
-    "Critically review this single activity for alignment, feasibility, inclusivity and authentic assessment. Suggest improvements for learning type, phase, minutes, group size, delivery mode, teacher role, resources and formative feedback. Give a short pedagogical rationale and a revised activity plan. Do not invent citations or links. Do not include private student information.",
-    "Course: "+safe(d.course),"Module: "+safe(d.module),"Authentic problem: "+safe(d.problem),"Outcomes: "+safe(d.outcomes),"Total planned minutes: "+safe(d.duration),
-    "Activity: "+JSON.stringify(a)
-   ].join("\n");panel.appendChild(prompt);
-   const actions=document.createElement("div");actions.className="toolbar lds-field-ai-actions";panel.appendChild(actions);
-   const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.textContent=choose(lang,"✨ Generate review with AI","✨ إنشاء مراجعة بالذكاء الاصطناعي");actions.appendChild(direct);
-   const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT");actions.appendChild(fallback);
-   const status=document.createElement("p");status.setAttribute("role","status");panel.appendChild(status);
-   const result=document.createElement("textarea");result.rows=8;result.placeholder=choose(lang,"Review the recommendations, then edit the activity fields yourself.","راجع التوصيات ثم عدّل حقول النشاط بنفسك.");panel.appendChild(result);
-   fallback.onclick=async()=>{window.open("https://chatgpt.com/","_blank","noopener,noreferrer");try{await navigator.clipboard.writeText(prompt.value);status.textContent=choose(lang,"Prompt copied; paste it into ChatGPT.","تم نسخ الطلب؛ الصقه في ChatGPT.");}catch{prompt.focus();prompt.select();status.textContent=choose(lang,"Copy the selected prompt manually.","انسخ الطلب المحدد يدوياً.");}};
-   direct.onclick=async()=>{if(!window.LDSDirectAI){status.textContent=choose(lang,"Direct AI unavailable; use ChatGPT.","الإنشاء المباشر غير متاح؛ استخدم ChatGPT.");return;}direct.disabled=true;status.textContent=choose(lang,"Reviewing activity…","جارٍ مراجعة النشاط…");try{result.value=await window.LDSDirectAI.generate(prompt.value);status.textContent=choose(lang,"Review suggestions before editing fields.","راجع الاقتراحات قبل تعديل الحقول.");}catch(e){status.textContent=choose(lang,"Direct AI unavailable or quota exceeded. Use Copy prompt & open ChatGPT.","الإنشاء المباشر غير متاح أو نفدت الحصة؛ استخدم ChatGPT.");}finally{direct.disabled=false;}};
+   const add=(tag,content,parent=panel)=>{const e=document.createElement(tag);e.textContent=content;parent.appendChild(e);return e};
+   add("h3",t("Improve this activity — 3 steps","تحسين هذا النشاط — ٣ خطوات"));
+   add("p",t("1. Generate or paste an AI review. 2. Inspect proposed changes. 3. Apply only the changes you approve. Your original activity stays unchanged until you apply.","١. أنشئ مراجعة أو الصقها. ٢. افحص التعديلات المقترحة. ٣. طبّق ما توافق عليه فقط. يبقى النشاط الأصلي دون تغيير حتى التطبيق."));
+   const prompt=add("textarea","");prompt.rows=7;prompt.value=[
+    "Act as an expert university learning designer using UCL's six learning types. Respond in "+(lang==="ar"?"Arabic":"English")+".",
+    "Review this activity for alignment with learning outcomes, feasibility, inclusive participation, assessment and time.",
+    "IMPORTANT: Return ONLY a valid JSON object, without markdown fences, with optional keys: title, phase, type, minutes, group, mode, teacher, resource, assessment, rationale.",
+    "Use phase before/during/after; type Acquisition/Inquiry/Discussion/Practice/Collaboration/Production; minutes a positive number.",
+    "Only include fields that genuinely need improvement. For each field use a replacement value, not an explanation. Put pedagogical explanation in rationale. Never invent links or citations.",
+    "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),"Problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),"Session minutes: "+safe(d.duration),"Current activity: "+JSON.stringify(a)
+   ].join("\n");prompt.setAttribute("aria-label",t("Prompt to send to ChatGPT","الطلب لإرساله إلى ChatGPT"));
+   const actions=add("div","");actions.className="toolbar lds-field-ai-actions";
+   const button=(txt,primary=false)=>{const b=add("button",txt,actions);b.type="button";b.className="btn"+(primary?" primary":"");return b};
+   const direct=button(t("✨ Generate with AI","✨ إنشاء بالذكاء الاصطناعي"),true);
+   const fallback=button(t("Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT"));
+   const status=add("p","");status.setAttribute("role","status");
+   const pasteLabel=add("label",t("Step 2 — Paste the complete AI response here","الخطوة ٢ — الصق استجابة الذكاء الاصطناعي كاملة هنا"));
+   const result=add("textarea","");result.rows=8;result.placeholder=t('Paste the response from ChatGPT here, then click "Review proposed changes".','الصق استجابة ChatGPT هنا ثم اضغط مراجعة التغييرات المقترحة.');result.setAttribute("aria-label",pasteLabel.textContent);
+   const review=add("button",t("Review proposed changes","مراجعة التغييرات المقترحة"));review.type="button";review.className="btn primary";
+   const comparison=add("div","");comparison.hidden=true;
+   const rationale=add("p","",comparison);rationale.className="muted";
+   const changes=add("div","",comparison);
+   const apply=add("button",t("Apply selected changes","تطبيق التغييرات المحددة"),comparison);apply.type="button";apply.className="btn primary";
+   const cancel=add("button",t("Discard suggestions","تجاهل الاقتراحات"),comparison);cancel.type="button";cancel.className="btn";
+   add("p",t("You remain in control: AI suggestions are never applied automatically. Save your design after reviewing.","أنت صاحب القرار: لا تُطبّق اقتراحات الذكاء الاصطناعي تلقائياً. احفظ التصميم بعد المراجعة."));
+   fallback.onclick=async()=>{
+    window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
+    try{await navigator.clipboard.writeText(prompt.value);status.textContent=t("Prompt copied. Paste it in ChatGPT, then return here and paste the full response into Step 2.","تم نسخ الطلب. الصقه في ChatGPT ثم عد والصق الاستجابة كاملة في الخطوة ٢.");}
+    catch{prompt.focus();prompt.select();status.textContent=t("Copy the selected prompt manually and paste it in ChatGPT.","انسخ الطلب المحدد يدوياً والصقه في ChatGPT.");}
+   };
+   direct.onclick=async()=>{
+    if(!window.LDSDirectAI){status.textContent=t("Direct AI unavailable. Use ChatGPT instead.","الخدمة المباشرة غير متاحة. استخدم ChatGPT.");return;}
+    direct.disabled=true;status.textContent=t("Generating review…","جارٍ إنشاء المراجعة…");
+    try{result.value=await window.LDSDirectAI.generate(prompt.value);status.textContent=t('Review generated. Click "Review proposed changes" below.','اكتملت المراجعة. اضغط مراجعة التغييرات المقترحة أدناه.');}
+    catch{status.textContent=t("Direct AI unavailable or quota exceeded. Use Copy prompt & open ChatGPT; your work is preserved.","الخدمة غير متاحة أو نفدت الحصة. استخدم نسخ الطلب وفتح ChatGPT؛ عملك محفوظ.");}
+    finally{direct.disabled=false;}
+   };
+   let proposed={};
+   review.onclick=()=>{
+    comparison.hidden=true;changes.replaceChildren();proposed={};
+    let raw=result.value.trim();if(!raw){status.textContent=t("Paste the AI response into Step 2 first.","الصق استجابة الذكاء الاصطناعي في الخطوة ٢ أولاً.");return;}
+    try{
+     raw=raw.replace(/^```(?:json)?\s*/i,"").replace(/```\s*$/,"").trim();
+     const obj=JSON.parse(raw);
+     if(!obj||Array.isArray(obj)||typeof obj!=="object")throw Error("format");
+     keys.forEach(k=>{
+      if(!(k in obj)||obj[k]===null||typeof obj[k]==="object")return;
+      const value=String(obj[k]).trim();if(!value||value===String(a[k]??"").trim())return;
+      if(k==="minutes"&&(!Number.isFinite(Number(value))||Number(value)<=0))return;
+      if(k==="phase"&&!allowedPhase.includes(value.toLowerCase()))return;
+      if(k==="type"&&!allowedTypes.some(x=>x.toLowerCase()===value.toLowerCase()))return;
+      proposed[k]=value;
+      const item=add("div","",changes);item.style.cssText="padding:10px 0;border-bottom:1px solid #dbe3ec";
+      const label=add("label","",item);label.style.cssText="display:flex;gap:10px;align-items:flex-start";
+      const check=document.createElement("input");check.type="checkbox";check.checked=true;check.dataset.approve=k;label.appendChild(check);
+      const words=add("span",(labels[k][lang==="ar"?1:0])+": "+String(a[k]??"")+" → "+value,label);words.style.overflowWrap="anywhere";
+     });
+     rationale.textContent=typeof obj.rationale==="string"?obj.rationale:"";
+     if(!Object.keys(proposed).length){status.textContent=t("No valid field changes were found. The activity has not been changed.","لم يتم العثور على تغييرات صالحة. لم يُعدّل النشاط.");return;}
+     comparison.hidden=false;status.textContent=t("Compare current and proposed values. Uncheck any change you do not want.","قارن القيم الحالية والمقترحة وأزل التحديد عن أي تغيير لا تريده.");
+    }catch{status.textContent=t("The response is not valid JSON. Ask ChatGPT: 'Return only the JSON object, without markdown or commentary.' Nothing has been changed.","الاستجابة ليست JSON صالحاً. اطلب من ChatGPT إعادة كائن JSON فقط دون شرح. لم يُعدّل شيء.");}
+   };
+   apply.onclick=()=>{
+    const selected=[...changes.querySelectorAll("[data-approve]:checked")].map(e=>e.dataset.approve);
+    if(!selected.length){status.textContent=t("Select at least one change to apply.","حدد تغييراً واحداً على الأقل.");return;}
+    const updated={...a};for(const k of selected){
+     const v=proposed[k];updated[k]=k==="minutes"?Number(v):k==="phase"?v.toLowerCase():k==="type"?allowedTypes.find(x=>x.toLowerCase()===v.toLowerCase()):v;
+    }
+    // Keep the rest of the design and all other activities untouched.
+    Object.assign(a,updated);
+    const first=card.querySelector('[data-prop="title"]');
+    selected.forEach(k=>{const el=card.querySelector('[data-prop="'+k+'"]');if(el)el.value=String(a[k]);});
+    const headerTitle=header.querySelector("strong");if(headerTitle)headerTitle.textContent=(i+1)+". "+a.title;
+    comparison.hidden=true;status.textContent=t("Selected changes applied. Click Save to retain them.","تم تطبيق التغييرات المحددة. اضغط حفظ للاحتفاظ بها.");
+   };
+   cancel.onclick=()=>{comparison.hidden=true;changes.replaceChildren();status.textContent=t("Suggestions discarded; activity unchanged.","تم تجاهل الاقتراحات؛ النشاط لم يتغير.");};
   };
  });
 }
