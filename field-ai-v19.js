@@ -1,4 +1,4 @@
-/* Learning Design Studio v1.9 — contextual field assistant; no external API calls. */
+/* Learning Design Studio v2.1 — hybrid direct AI and ChatGPT fallback. */
 (function(){
 "use strict";
 const names={course:["Course","المساق"],module:["Module title","عنوان الوحدة"],discipline:["Discipline","التخصص"],problem:["Authentic problem","المشكلة الواقعية"],outcomes:["Learning outcomes","مخرجات التعلم"],duration:["Planned duration","المدة المخططة"],title:["Activity title","عنوان النشاط"],phase:["Activity phase","مرحلة النشاط"],type:["Learning type","نوع التعلم"],minutes:["Activity duration","مدة النشاط"],group:["Group size","حجم المجموعة"],mode:["Delivery mode","نمط التدريس"],teacher:["Teacher role","دور المعلم"],assessment:["Assessment and formative feedback","التقييم والتغذية الراجعة"]};
@@ -44,20 +44,22 @@ function mount(d,lang){
    const actions=document.createElement("div");actions.className="toolbar";panel.appendChild(actions);
    const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.textContent=choose(lang,"Copy prompt","نسخ الطلب");actions.appendChild(copy);
    copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);copy.textContent=choose(lang,"Copied!","تم النسخ")}catch{p.focus();p.select();alert(choose(lang,"Please copy the selected prompt manually.","انسخ النص المحدد يدوياً."))}};
+   const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT");actions.appendChild(fallback);
+   fallback.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);window.open("https://chatgpt.com/","_blank","noopener,noreferrer");status.textContent=choose(lang,"Prompt copied. Paste it into ChatGPT, then paste the reviewed field value below.","تم نسخ الطلب. الصقه في ChatGPT ثم الصق القيمة المُراجعة أدناه.");}catch{p.focus();p.select();status.textContent=choose(lang,"Copy the selected prompt, then use Open ChatGPT.","انسخ الطلب المحدد ثم افتح ChatGPT.");}};
    const link=document.createElement("a");link.href="https://chatgpt.com/";link.target="_blank";link.rel="noopener noreferrer";link.className="btn";link.textContent=choose(lang,"Open ChatGPT","فتح ChatGPT");actions.appendChild(link);
    const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.textContent=choose(lang,"✨ Generate directly with AI","✨ إنشاء مباشر بالذكاء الاصطناعي");panel.appendChild(direct);
    const status=document.createElement("p");status.setAttribute("role","status");panel.appendChild(status);
    const label=document.createElement("label");label.textContent=choose(lang,"Reviewed suggestion to insert","الاقتراح المُراجع للإدراج");panel.appendChild(label);
    const output=document.createElement("textarea");output.rows=5;output.placeholder=choose(lang,"Paste the field value only; review accuracy first.","الصق قيمة الحقل فقط بعد مراجعتها.");panel.appendChild(output);
    direct.onclick=async()=>{
-    if(!window.LDSDirectAI){status.textContent=choose(lang,"AI client unavailable.","خدمة الذكاء الاصطناعي غير متاحة.");return}
+    if(!window.LDSDirectAI){status.textContent=choose(lang,"Direct AI is unavailable. Use Copy prompt & open ChatGPT.","الإنشاء المباشر غير متاح. استخدم نسخ الطلب وفتح ChatGPT.");return}
     direct.disabled=true;status.textContent=choose(lang,"Generating suggestion…","جارٍ إنشاء الاقتراح…");
     try{output.value=await window.LDSDirectAI.generate(p.value);status.textContent=choose(lang,"Review the suggestion before inserting.","راجع الاقتراح قبل الإدراج.");}
-    catch(e){status.textContent=e.message||String(e)}
+    catch(e){const reason=e&&e.code;const fallbackMessage=reason==="quota"?choose(lang,"Direct AI credits or quota are exhausted.","نفدت أرصدة أو حصة واجهة الذكاء الاصطناعي."):reason==="rate_limit"?choose(lang,"Direct AI is temporarily rate-limited.","تم بلوغ حد الطلبات المؤقت."):reason==="auth"?choose(lang,"Direct AI authentication needs administrator attention.","تحتاج مصادقة الخدمة إلى مراجعة المسؤول."):choose(lang,"Direct AI is currently unavailable.","الإنشاء المباشر غير متاح حالياً.");status.textContent=fallbackMessage+" "+choose(lang,"Copy the tailored prompt and open ChatGPT to continue; your design is preserved.","انسخ الطلب المخصص وافتح ChatGPT للمتابعة؛ تصميمك محفوظ.");}
     finally{direct.disabled=false}
    };
    const insert=document.createElement("button");insert.type="button";insert.className="btn primary";insert.style.marginTop="8px";insert.textContent=choose(lang,"Insert reviewed value","إدراج القيمة المُراجعة");panel.appendChild(insert);
-   const note=document.createElement("p");note.textContent=choose(lang,"No AI service is called by this website. Do not paste private student data. For select fields, the suggestion must match an available option.","لا يتصل الموقع بخدمة ذكاء اصطناعي. تجنب بيانات الطلبة الخاصة. يجب أن تتطابق القيم في القوائم مع الخيارات المتاحة.");panel.appendChild(note);
+   const note=document.createElement("p");note.textContent=choose(lang,"Direct generation sends the tailored prompt to the configured AI provider. Alternatively, use ChatGPT manually. Do not include private student data. Review suggestions before inserting; select fields require an available option.","يرسل الإنشاء المباشر الطلب إلى مزود الذكاء الاصطناعي المهيأ. ويمكن استخدام ChatGPT يدوياً. تجنب بيانات الطلبة الخاصة وراجع الاقتراح قبل إدراجه.");panel.appendChild(note);
    insert.onclick=()=>{
     const value=output.value.trim();if(!value){alert(choose(lang,"Paste a reviewed suggestion first.","الصق الاقتراح المُراجع أولاً."));return}
     if(el.tagName==="SELECT"){
