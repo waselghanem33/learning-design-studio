@@ -17,6 +17,7 @@ function prompt(d,a,lang,mode){
  "Existing resources and instructions: "+(a.resource||"None"),
  "Produce: (1) 2-3 suitable resource formats and their learning purpose; (2) one ready-to-use student-facing activity brief with steps, time allocation and expected output; (3) formative assessment and feedback guidance; (4) accessibility and low-bandwidth alternatives; (5) optional credible OER discovery sources.",
  "Align every suggestion with the activity's learning type and outcomes. Respect the time and group size. Distinguish resources you create from external resources.",
+ "When writing technical resources, preserve equations in LaTeX notation and include image references or clearly marked diagram descriptions. Do not claim that an image is embedded unless a real image file or verified URL is supplied.",
  "Do not fabricate citations, publications, URLs or claims that sources have been verified. Mark any external source suggestions as requiring instructor verification. Do not include personal or sensitive student data."
  ].join("\n");
 }
@@ -35,8 +36,30 @@ function mount(design,lang){
    '<div class="field"><label>'+L("طلب الذكاء الاصطناعي (قابل للتعديل)","AI prompt (editable)",lang)+'</label><textarea rows="9" data-ra-prompt></textarea></div>'+
    '<div class="toolbar"><button class="btn" data-ra-copy>'+L("نسخ الطلب","Copy prompt",lang)+'</button><a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">'+L("فتح ChatGPT","Open ChatGPT",lang)+'</a></div>'+
    '<div class="field"><label>'+L("الصق النص المُراجع هنا","Paste reviewed AI output here",lang)+'</label><textarea rows="8" data-ra-result placeholder="'+L("راجع الدقة والروابط قبل الإدراج","Check accuracy and links before inserting",lang)+'"></textarea></div>'+
-   '<div class="toolbar"><button class="btn primary" data-ra-insert>'+L("إدراج في الموارد","Insert into resources",lang)+'</button><button class="btn" data-ra-close>'+L("إغلاق","Close",lang)+'</button></div>'+
+   '<div class="toolbar"><button class="btn primary" data-ra-insert>'+L("إدراج في الموارد","Insert full text (plain text only)",lang)+'</button><button class="btn" data-ra-close>'+L("إغلاق","Close",lang)+'</button></div>'+
    '<p><small>'+L("لا يُرسل الموقع بياناتك إلى خدمة ذكاء اصطناعي. النسخ واللصق يدويان. لا تُدرج بيانات شخصية أو حساسة.","The website does not send data to an AI service. Copy/paste is manual. Do not include sensitive or personal information.",lang)+'</small></p>';
+   // Rich resources should be exported as a separate file; the activity field is for concise instructions and links.
+   const resourceTools=document.createElement("div");resourceTools.className="field";resourceTools.style.marginTop="12px";
+   const resourceTitle=document.createElement("h4");resourceTitle.textContent=L("ملف موارد مستقل وروابط","Separate resource file and links",lang);resourceTools.appendChild(resourceTitle);
+   const explanation=document.createElement("p");explanation.textContent=L("احفظ النص الكامل كملف Markdown للحفاظ على معادلات LaTeX وروابط الصور، ثم ارفعه إلى Moodle أو Drive أو GitHub. الصق رابط المشاركة في الحقل أدناه. الملفات المحلية ليست روابط عامة.","Download the full resource as Markdown (.md), preserving LaTeX equations and image references. Upload it to Moodle, Drive, or GitHub, then paste its shareable URL below. A local downloaded file is not a public link.",lang);resourceTools.appendChild(explanation);
+   const downloadBtn=document.createElement("button");downloadBtn.type="button";downloadBtn.className="btn";downloadBtn.textContent=L("تنزيل ملف الموارد (.md)","Download resource file (.md)",lang);resourceTools.appendChild(downloadBtn);
+   const urlLabel=document.createElement("label");urlLabel.textContent=L("رابط المورد المنشور (https://)","Published resource URL (https://)",lang);resourceTools.appendChild(urlLabel);
+   const url=document.createElement("input");url.type="url";url.placeholder="https://";url.style.width="100%";resourceTools.appendChild(url);
+   const linkBtn=document.createElement("button");linkBtn.type="button";linkBtn.className="btn";linkBtn.style.marginTop="8px";linkBtn.textContent=L("إضافة رابط إلى تعليمات الطلبة","Add link to student instructions",lang);resourceTools.appendChild(linkBtn);
+   panel.querySelector("[data-ra-result]").parentNode.insertAdjacentElement("afterend",resourceTools);
+   downloadBtn.onclick=()=>{
+     const value=panel.querySelector("[data-ra-result]").value.trim();
+     if(!value){alert(L("الصق المحتوى أولاً","Paste or generate the resource first",lang));return}
+     const blob=new Blob([value],{type:"text/markdown;charset=utf-8"});const href=URL.createObjectURL(blob);
+     const a=document.createElement("a");a.href=href;a.download="learning-resource-activity-"+(i+1)+".md";a.click();setTimeout(()=>URL.revokeObjectURL(href),1500);
+   };
+   linkBtn.onclick=()=>{
+     const value=url.value.trim();let parsed;
+     try{parsed=new URL(value);if(parsed.protocol!=="https:")throw Error("url")}catch{alert(L("أدخل رابط HTTPS صالحاً","Enter a valid HTTPS link",lang));return}
+     const line=L("رابط المورد التعليمي: ","Learning resource: ",lang)+parsed.href;
+     field.value=(field.value.trim()?field.value.trim()+"\\n":"")+line;
+     field.dispatchEvent(new Event("change",{bubbles:true}));
+   };
    const mode=panel.querySelector("[data-ra-mode]"),p=panel.querySelector("[data-ra-prompt]");
    const refresh=()=>{p.value=prompt(design,design.activities[i],lang,mode.value)};
    mode.addEventListener("change",refresh);refresh();
