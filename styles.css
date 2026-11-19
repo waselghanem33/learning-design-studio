@@ -166,3 +166,16 @@ body[dir="rtl"] #ai-coach-root .ai-step{direction:rtl}
 .lds-tour-spacer{flex:1}
 .lds-tour-target{position:relative;z-index:2001!important;outline:3px solid #f3c65a!important;outline-offset:3px;box-shadow:0 0 0 6px rgba(255,255,255,.5)}
 @media(max-width:600px){.lds-tour-dialog{padding:19px}.lds-tour-launch{margin:8px 0 0}.lds-tour-actions{gap:6px}}
+
+
+/* v2.1.1: full-width, responsive contextual AI assistant */
+.lds-field-ai-panel{grid-column:1/-1;min-width:0;width:100%;max-width:100%;margin:10px 0 16px;overflow-wrap:anywhere}
+.lds-field-ai-panel[hidden]{display:none!important}
+.lds-field-ai-panel textarea{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;resize:vertical;line-height:1.5}
+.lds-field-ai-panel h3{line-height:1.35;overflow-wrap:break-word}
+.lds-field-ai-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:12px 0}
+.lds-field-ai-actions .btn{white-space:normal;max-width:100%;text-align:center}
+.lds-field-ai-actions .primary{order:0}
+.lds-field-ai-actions .btn:not(.primary):not(.lds-ai-secondary){order:1}
+.lds-field-ai-actions .lds-ai-secondary{order:2}
+@media(max-width:640px){.lds-field-ai-panel{padding:14px}.lds-field-ai-actions{display:grid;grid-template-columns:1fr}.lds-field-ai-actions .btn{width:100%;justify-content:center}}
