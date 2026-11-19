@@ -41,6 +41,11 @@ function mount(design,lang){
    const refresh=()=>{p.value=prompt(design,design.activities[i],lang,mode.value)};
    mode.addEventListener("change",refresh);refresh();
    panel.querySelector("[data-ra-copy]").onclick=async()=>{try{await navigator.clipboard.writeText(p.value);alert(L("تم نسخ الطلب","Prompt copied",lang))}catch{p.focus();p.select();alert(L("انسخ النص المحدد يدوياً","Copy the selected text manually",lang))}};
+   const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.style.marginTop="8px";direct.textContent=L("✨ إنشاء الموارد مباشرة","✨ Generate resources directly",lang);
+   const status=document.createElement("p");status.setAttribute("role","status");
+   panel.querySelector("[data-ra-prompt]").insertAdjacentElement("afterend",status);
+   status.insertAdjacentElement("beforebegin",direct);
+   direct.onclick=async()=>{direct.disabled=true;status.textContent=L("جارٍ الإنشاء…","Generating…",lang);try{panel.querySelector("[data-ra-result]").value=await window.LDSDirectAI.generate(p.value);status.textContent=L("راجع المحتوى قبل الإدراج","Review before inserting",lang)}catch(e){status.textContent=e.message||String(e)}finally{direct.disabled=false}};
    panel.querySelector("[data-ra-insert]").onclick=()=>{
     const val=panel.querySelector("[data-ra-result]").value.trim();
     if(!val){alert(L("الصق المحتوى المُراجع أولاً","Paste reviewed content first",lang));return}
