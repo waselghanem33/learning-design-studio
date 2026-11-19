@@ -25,8 +25,8 @@ function mount(design,lang){
   const i=Number(field.dataset.act);
   if(field.dataset.resourceAi) return;
   field.dataset.resourceAi="1";
-  const button=document.createElement("button");button.type="button";button.className="btn";button.style.marginTop="8px";button.textContent=L("✨ مساعد الموارد بالذكاء الاصطناعي","✨ AI Resource Assistant",lang);
-  field.insertAdjacentElement("afterend",button);
+  const button=document.querySelector('[data-resource-ai-button="'+i+'"]') || document.createElement("button");
+  if(!button.parentNode){button.type="button";button.className="btn";button.textContent=L("✨ مساعد الموارد بالذكاء الاصطناعي","✨ AI Resource Assistant",lang);field.insertAdjacentElement("afterend",button);}
   const panel=document.createElement("div");panel.hidden=true;panel.className="card";panel.style.marginTop="10px";field.parentNode.appendChild(panel);
   button.addEventListener("click",()=>{
    panel.hidden=!panel.hidden;if(panel.hidden)return;
