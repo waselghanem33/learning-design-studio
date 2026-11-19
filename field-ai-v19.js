@@ -36,7 +36,7 @@ function mount(d,lang){
   const i=el.hasAttribute("data-act")?Number(el.dataset.act):null;
   const parent=el.closest(".field");if(!parent)return;
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.classList.add("lds-context-ai");btn.classList.toggle("lds-context-ai-secondary",optional.has(key));btn.textContent="✨ "+labelFor(key,lang);
-  const label=parent.querySelector("label");if(label){const heading=document.createElement("div");heading.className="lds-field-heading";label.parentNode.insertBefore(heading,label);heading.appendChild(label);heading.appendChild(btn);}else parent.appendChild(btn);
+  const label=parent.querySelector("label");if(label&&key!=="assessment"){const heading=document.createElement("div");heading.className="lds-field-heading";label.parentNode.insertBefore(heading,label);heading.appendChild(label);heading.appendChild(btn);}else parent.appendChild(btn);
   const panel=document.createElement("div");panel.hidden=true;panel.className="card lds-field-ai-panel";parent.insertAdjacentElement("afterend",panel);
   btn.addEventListener("click",()=>{
    panel.hidden=!panel.hidden;if(panel.hidden)return;
@@ -84,7 +84,7 @@ function mount(d,lang){
 function mountActivityCoach(d,lang){
  document.querySelectorAll(".activity").forEach((card,i)=>{
   const header=card.querySelector(".row");if(!header||header.querySelector(".lds-activity-coach"))return;
-  const btn=document.createElement("button");btn.type="button";btn.className="btn lds-activity-coach";btn.textContent=choose(lang,"✨ Improve activity","✨ تحسين النشاط");header.appendChild(btn);
+  const btn=document.createElement("button");btn.type="button";btn.className="btn lds-activity-coach";btn.textContent=choose(lang,"✨ Improve activity","✨ تحسين النشاط");const deleteButton=header.querySelector("[data-delete]");if(deleteButton)header.insertBefore(btn,deleteButton);else header.appendChild(btn);
   const panel=document.createElement("section");panel.className="card lds-field-ai-panel lds-activity-review";panel.hidden=true;card.insertBefore(panel,card.querySelector(".grid"));
   btn.onclick=()=>{panel.hidden=!panel.hidden;if(panel.hidden)return;
    const a=d.activities[i];panel.replaceChildren();
