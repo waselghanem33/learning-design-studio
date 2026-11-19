@@ -3,9 +3,9 @@
 "use strict";
 const names={course:["Course","المساق"],module:["Module title","عنوان الوحدة"],discipline:["Discipline","التخصص"],problem:["Authentic problem","المشكلة الواقعية"],outcomes:["Learning outcomes","مخرجات التعلم"],duration:["Planned duration","المدة المخططة"],title:["Activity title","عنوان النشاط"],phase:["Activity phase","مرحلة النشاط"],type:["Learning type","نوع التعلم"],minutes:["Activity duration","مدة النشاط"],group:["Group size","حجم المجموعة"],mode:["Delivery mode","نمط التدريس"],teacher:["Teacher role","دور المعلم"],assessment:["Assessment and formative feedback","التقييم والتغذية الراجعة"]};
 const choose=(lang,en,ar)=>lang==="ar"?ar:en;
-const priority=new Set(["problem","outcomes","type","teacher","assessment"]);
-const optional=new Set(["module","title","phase","minutes","group","mode","duration"]);
-const hidden=new Set(["course","discipline"]);
+const priority=new Set(["problem","outcomes","assessment"]);
+const optional=new Set();
+const hidden=new Set(["course","module","discipline","duration","title","phase","type","minutes","group","mode","teacher"]);
 const labelFor=(key,lang)=>({problem:["Improve problem","تحسين المشكلة"],outcomes:["Improve outcomes","تحسين المخرجات"],type:["Recommend learning type","اقتراح نوع التعلم"],teacher:["Suggest teacher role","اقتراح دور المعلم"],assessment:["Design assessment","تصميم التقييم"],module:["Suggest title","اقتراح عنوان"],title:["Suggest title","اقتراح عنوان"],phase:["Suggest phase","اقتراح المرحلة"],minutes:["Suggest duration","اقتراح المدة"],group:["Suggest grouping","اقتراح المجموعات"],mode:["Suggest delivery","اقتراح النمط"],duration:["Review duration","مراجعة المدة"]}[key]||["AI Assist","مساعدة الذكاء الاصطناعي"])[lang==="ar"?1:0];
 const safe=s=>String(s??"");
 const guidance={
@@ -95,13 +95,13 @@ function mountActivityCoach(d,lang){
     "Critically review this single activity for alignment, feasibility, inclusivity and authentic assessment. Suggest improvements for learning type, phase, minutes, group size, delivery mode, teacher role, resources and formative feedback. Give a short pedagogical rationale and a revised activity plan. Do not invent citations or links. Do not include private student information.",
     "Course: "+safe(d.course),"Module: "+safe(d.module),"Authentic problem: "+safe(d.problem),"Outcomes: "+safe(d.outcomes),"Total planned minutes: "+safe(d.duration),
     "Activity: "+JSON.stringify(a)
-   ].join("\\n");panel.appendChild(prompt);
+   ].join("\n");panel.appendChild(prompt);
    const actions=document.createElement("div");actions.className="toolbar lds-field-ai-actions";panel.appendChild(actions);
    const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.textContent=choose(lang,"✨ Generate review with AI","✨ إنشاء مراجعة بالذكاء الاصطناعي");actions.appendChild(direct);
    const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT");actions.appendChild(fallback);
    const status=document.createElement("p");status.setAttribute("role","status");panel.appendChild(status);
    const result=document.createElement("textarea");result.rows=8;result.placeholder=choose(lang,"Review the recommendations, then edit the activity fields yourself.","راجع التوصيات ثم عدّل حقول النشاط بنفسك.");panel.appendChild(result);
-   fallback.onclick=async()=>{const tab=window.open("https://chatgpt.com/","_blank","noopener,noreferrer");try{await navigator.clipboard.writeText(prompt.value);status.textContent=choose(lang,"Prompt copied; paste it into ChatGPT.","تم نسخ الطلب؛ الصقه في ChatGPT.");}catch{prompt.focus();prompt.select();status.textContent=choose(lang,"Copy the selected prompt manually.","انسخ الطلب المحدد يدوياً.");}};
+   fallback.onclick=async()=>{window.open("https://chatgpt.com/","_blank","noopener,noreferrer");try{await navigator.clipboard.writeText(prompt.value);status.textContent=choose(lang,"Prompt copied; paste it into ChatGPT.","تم نسخ الطلب؛ الصقه في ChatGPT.");}catch{prompt.focus();prompt.select();status.textContent=choose(lang,"Copy the selected prompt manually.","انسخ الطلب المحدد يدوياً.");}};
    direct.onclick=async()=>{if(!window.LDSDirectAI){status.textContent=choose(lang,"Direct AI unavailable; use ChatGPT.","الإنشاء المباشر غير متاح؛ استخدم ChatGPT.");return;}direct.disabled=true;status.textContent=choose(lang,"Reviewing activity…","جارٍ مراجعة النشاط…");try{result.value=await window.LDSDirectAI.generate(prompt.value);status.textContent=choose(lang,"Review suggestions before editing fields.","راجع الاقتراحات قبل تعديل الحقول.");}catch(e){status.textContent=choose(lang,"Direct AI unavailable or quota exceeded. Use Copy prompt & open ChatGPT.","الإنشاء المباشر غير متاح أو نفدت الحصة؛ استخدم ChatGPT.");}finally{direct.disabled=false;}};
   };
  });
