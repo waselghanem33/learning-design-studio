@@ -106,5 +106,6 @@ function mountActivityCoach(d,lang){
   };
  });
 }
-\nwindow.LDSFieldAI={mount(d,lang){mount(d,lang);mountActivityCoach(d,lang)},buildPrompt};
+
+window.LDSFieldAI={mount(d,lang){mount(d,lang);mountActivityCoach(d,lang)},buildPrompt};
 })();
