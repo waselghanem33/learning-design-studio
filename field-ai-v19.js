@@ -97,7 +97,7 @@ function mountActivityCoach(d,lang){
    panel.hidden=!panel.hidden;if(panel.hidden)return;
    const a=d.activities[i];panel.replaceChildren();
    const add=(tag,content,parent=panel)=>{const e=document.createElement(tag);e.textContent=content;parent.appendChild(e);return e};
-   add("h3",t("Improve this activity — 3 steps","تحسين هذا النشاط — ٣ خطوات"));
+   add("h3",t("Improve activity: paste → review → apply","تحسين النشاط: الصق ← راجع ← طبّق"));
    add("p",t("1. Generate or paste an AI review. 2. Inspect proposed changes. 3. Apply only the changes you approve. Your original activity stays unchanged until you apply.","١. أنشئ مراجعة أو الصقها. ٢. افحص التعديلات المقترحة. ٣. طبّق ما توافق عليه فقط. يبقى النشاط الأصلي دون تغيير حتى التطبيق."));
    const prompt=add("textarea","");prompt.rows=7;prompt.value=[
     "Act as an expert university learning designer using UCL's six learning types. Respond in "+(lang==="ar"?"Arabic":"English")+".",
@@ -112,7 +112,7 @@ function mountActivityCoach(d,lang){
    const direct=button(t("✨ Generate with AI","✨ إنشاء بالذكاء الاصطناعي"),true);
    const fallback=button(t("Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT"));
    const status=add("p","");status.setAttribute("role","status");
-   const pasteLabel=add("label",t("Step 2 — Paste the complete AI response here","الخطوة ٢ — الصق استجابة الذكاء الاصطناعي كاملة هنا"));
+   const pasteLabel=add("label",t("Step 2 — Paste the FULL ChatGPT response here (NOT in Resources and student instructions)","الخطوة ٢ — الصق رد ChatGPT كاملاً هنا (وليس في حقل الموارد وتعليمات الطلبة)"));
    const result=add("textarea","");result.rows=8;result.placeholder=t('Paste the response from ChatGPT here, then click "Review proposed changes".','الصق استجابة ChatGPT هنا ثم اضغط مراجعة التغييرات المقترحة.');result.setAttribute("aria-label",pasteLabel.textContent);
    const review=add("button",t("Review proposed changes","مراجعة التغييرات المقترحة"));review.type="button";review.className="btn primary";
    const comparison=add("div","");comparison.hidden=true;
@@ -120,7 +120,7 @@ function mountActivityCoach(d,lang){
    const changes=add("div","",comparison);
    const apply=add("button",t("Apply selected changes","تطبيق التغييرات المحددة"),comparison);apply.type="button";apply.className="btn primary";
    const cancel=add("button",t("Discard suggestions","تجاهل الاقتراحات"),comparison);cancel.type="button";cancel.className="btn";
-   add("p",t("You remain in control: AI suggestions are never applied automatically. Save your design after reviewing.","أنت صاحب القرار: لا تُطبّق اقتراحات الذكاء الاصطناعي تلقائياً. احفظ التصميم بعد المراجعة."));
+   add("p",t("Only checked fields are updated. Your other activities stay untouched. Approved changes are saved in this browser; use Export JSON for a backup.","تُحدّث الحقول المحددة فقط وتبقى الأنشطة الأخرى دون تغيير. تُحفظ التعديلات الموافق عليها في هذا المتصفح؛ استخدم تصدير JSON لنسخة احتياطية."));
    fallback.onclick=async()=>{
     window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
     try{await navigator.clipboard.writeText(prompt.value);status.textContent=t("Prompt copied. Paste it in ChatGPT, then return here and paste the full response into Step 2.","تم نسخ الطلب. الصقه في ChatGPT ثم عد والصق الاستجابة كاملة في الخطوة ٢.");}
@@ -144,9 +144,10 @@ function mountActivityCoach(d,lang){
      keys.forEach(k=>{
       if(!(k in obj)||obj[k]===null||typeof obj[k]==="object")return;
       const value=String(obj[k]).trim();if(!value||value===String(a[k]??"").trim())return;
-      if(k==="minutes"&&(!Number.isFinite(Number(value))||Number(value)<=0))return;
+      if(k==="minutes"&&(!Number.isFinite(Number(value))||Number(value)<=0||!Number.isInteger(Number(value))))return;
       if(k==="phase"&&!allowedPhase.includes(value.toLowerCase()))return;
       if(k==="type"&&!allowedTypes.some(x=>x.toLowerCase()===value.toLowerCase()))return;
+      if((k==="title"||k==="teacher"||k==="resource"||k==="assessment")&&value.length>6000)return;
       proposed[k]=value;
       const item=add("div","",changes);item.style.cssText="padding:10px 0;border-bottom:1px solid #dbe3ec";
       const label=add("label","",item);label.style.cssText="display:flex;gap:10px;align-items:flex-start";
@@ -169,7 +170,9 @@ function mountActivityCoach(d,lang){
     const first=card.querySelector('[data-prop="title"]');
     selected.forEach(k=>{const el=card.querySelector('[data-prop="'+k+'"]');if(el)el.value=String(a[k]);});
     const headerTitle=header.querySelector("strong");if(headerTitle)headerTitle.textContent=(i+1)+". "+a.title;
-    comparison.hidden=true;status.textContent=t("Selected changes applied. Click Save to retain them.","تم تطبيق التغييرات المحددة. اضغط حفظ للاحتفاظ بها.");
+    comparison.hidden=true;
+    try{localStorage.setItem("lds-design",JSON.stringify(d));status.textContent=t("Changes applied and saved in this browser. Review the updated fields below; Export JSON for a backup.","طُبّقت التغييرات وحُفظت في هذا المتصفح. راجع الحقول المحدثة أدناه، ثم صدّر JSON لنسخة احتياطية.");}
+    catch{status.textContent=t("Changes applied, but browser storage failed. Click Save and export a backup.","طُبّقت التغييرات، لكن الحفظ في المتصفح تعذّر. اضغط حفظ وصدّر نسخة احتياطية.");}
    };
    cancel.onclick=()=>{comparison.hidden=true;changes.replaceChildren();status.textContent=t("Suggestions discarded; activity unchanged.","تم تجاهل الاقتراحات؛ النشاط لم يتغير.");};
   };
