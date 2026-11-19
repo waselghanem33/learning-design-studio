@@ -3,10 +3,13 @@
 "use strict";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const L=(ar,en,lang)=>lang==="ar"?ar:en;
-function prompt(d,a,lang,mode){
+function prompt(d,a,lang,mode,format="md"){
  const tasks={generate:"Create a practical resource pack",find:"Recommend credible open educational resources and discovery strategies",improve:"Critique and improve the existing resources and instructions"};
  return [
  "You are an expert university instructional designer. Respond in "+(lang==="ar"?"Arabic":"English")+".",
+ "DELIVERABLE: Create exactly one complete, downloadable learning resource file in "+({md:"Markdown (.md)",pdf:"PDF (.pdf)",docx:"Word (.docx)",html:"HTML (.html)"}[format]||"Markdown (.md)")+" format. Give it a descriptive filename. Do not return a lengthy chat explanation or multiple alternative formats.",
+ "If your ChatGPT environment can create files, actually create and attach the requested file with a download link. Do not merely rename text with an extension. If file creation is unavailable, return the full resource source text (Markdown for .md; complete standalone HTML for .html; Markdown source as an explicitly labeled fallback for PDF/Word) so the professor can download or convert it separately. Never claim a file was created unless it really was.",
+ "For equations use correctly formatted LaTeX in Markdown or render mathematics legibly in the PDF/Word output. For figures, embed original diagrams when possible; otherwise provide descriptive alt text and an honest placeholder. Do not fabricate image URLs.",
  "TASK: "+tasks[mode]+".",
  "Course: "+(d.course||"Not specified"),"Module: "+(d.module||"Not specified"),
  "Discipline: "+(d.discipline||"Not specified"),"Authentic problem: "+(d.problem||"Not specified"),
@@ -33,6 +36,7 @@ function mount(design,lang){
    panel.hidden=!panel.hidden;if(panel.hidden)return;
    panel.innerHTML='<h3>'+L("مساعد الموارد التعليمية","Learning Resource Assistant",lang)+'</h3><p>'+L("اختر المهمة، وانسخ الطلب إلى أداة ذكاء اصطناعي. راجع الناتج والصقه أدناه قبل إضافته.","Choose a task, copy the tailored prompt to an AI tool, then review and paste its response before inserting.")+'</p>'+
    '<div class="field"><label>'+L("نوع المساعدة","Assistance type",lang)+'</label><select data-ra-mode><option value="generate">'+L("إنشاء موارد وتعليمات","Generate resources and instructions",lang)+'</option><option value="find">'+L("اقتراح مصادر تعليمية مفتوحة","Discover open resources",lang)+'</option><option value="improve">'+L("تحسين الموارد الحالية","Improve existing resources",lang)+'</option></select></div>'+
+   '<div class="field"><label>'+L("صيغة الملف المطلوب","Requested file format",lang)+'</label><select data-ra-format><option value="md">Markdown (.md)</option><option value="pdf">PDF (.pdf)</option><option value="docx">Word (.docx)</option><option value="html">HTML (.html)</option></select></div>'+
    '<div class="field"><label>'+L("طلب الذكاء الاصطناعي (قابل للتعديل)","AI prompt (editable)",lang)+'</label><textarea rows="9" data-ra-prompt></textarea></div>'+
    '<div class="toolbar"><button class="btn" data-ra-copy>'+L("نسخ الطلب","Copy prompt",lang)+'</button><a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">'+L("فتح ChatGPT","Open ChatGPT",lang)+'</a></div>'+
    '<div class="field"><label>'+L("الصق النص المُراجع هنا","Paste reviewed AI output here",lang)+'</label><textarea rows="8" data-ra-result placeholder="'+L("راجع الدقة والروابط قبل الإدراج","Check accuracy and links before inserting",lang)+'"></textarea></div>'+
@@ -60,9 +64,9 @@ function mount(design,lang){
      field.value=(field.value.trim()?field.value.trim()+"\\n":"")+line;
      field.dispatchEvent(new Event("change",{bubbles:true}));
    };
-   const mode=panel.querySelector("[data-ra-mode]"),p=panel.querySelector("[data-ra-prompt]");
-   const refresh=()=>{p.value=prompt(design,design.activities[i],lang,mode.value)};
-   mode.addEventListener("change",refresh);refresh();
+   const mode=panel.querySelector("[data-ra-mode]"),format=panel.querySelector("[data-ra-format]"),p=panel.querySelector("[data-ra-prompt]");
+   const refresh=()=>{p.value=prompt(design,design.activities[i],lang,mode.value,format.value)};
+   mode.addEventListener("change",refresh);format.addEventListener("change",refresh);refresh();
    panel.querySelector("[data-ra-copy]").onclick=async()=>{try{await navigator.clipboard.writeText(p.value);alert(L("تم نسخ الطلب","Prompt copied",lang))}catch{p.focus();p.select();alert(L("انسخ النص المحدد يدوياً","Copy the selected text manually",lang))}};
    const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.style.marginTop="8px";direct.textContent=L("✨ إنشاء الموارد مباشرة","✨ Generate resources directly",lang);
    const status=document.createElement("p");status.setAttribute("role","status");
