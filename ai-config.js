@@ -1,5 +1,5 @@
 /* Configure the deployed HTTPS Worker URL here, never an API key. */
-window.LDS_AI_ENDPOINT = ""; // Example: https://learning-design-ai.your-subdomain.workers.dev
+window.LDS_AI_ENDPOINT = "https://learning-design-ai.waselghanem3.workers.dev";// Example: https://learning-design-ai.your-subdomain.workers.dev
 window.LDSDirectAI = {
  async generate(prompt) {
   const endpoint=window.LDS_AI_ENDPOINT;
