@@ -9,7 +9,7 @@ window.LDSDirectAI = {
   try {
    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt}),signal:controller.signal});
    let data;try{data=await response.json()}catch{throw Error("AI server returned an invalid response")}
-   if(!response.ok)throw Error(data.error||"AI generation failed");
+   if(!response.ok){const message=String(data.error||"AI generation failed");const error=new Error(message);error.status=response.status;error.code=response.status===429?(/quota|credit|billing|insufficient_quota/i.test(message)?"quota":"rate_limit"):response.status===401||response.status===403?"auth":"unavailable";throw error;}
    if(typeof data.text!=="string"||!data.text.trim())throw Error("AI returned an empty response");
    return data.text.trim();
   }finally{clearTimeout(timer)}
