@@ -45,8 +45,17 @@ function mount(d,lang){
    const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.textContent=choose(lang,"Copy prompt","نسخ الطلب");actions.appendChild(copy);
    copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);copy.textContent=choose(lang,"Copied!","تم النسخ")}catch{p.focus();p.select();alert(choose(lang,"Please copy the selected prompt manually.","انسخ النص المحدد يدوياً."))}};
    const link=document.createElement("a");link.href="https://chatgpt.com/";link.target="_blank";link.rel="noopener noreferrer";link.className="btn";link.textContent=choose(lang,"Open ChatGPT","فتح ChatGPT");actions.appendChild(link);
+   const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.textContent=choose(lang,"✨ Generate directly with AI","✨ إنشاء مباشر بالذكاء الاصطناعي");panel.appendChild(direct);
+   const status=document.createElement("p");status.setAttribute("role","status");panel.appendChild(status);
    const label=document.createElement("label");label.textContent=choose(lang,"Reviewed suggestion to insert","الاقتراح المُراجع للإدراج");panel.appendChild(label);
    const output=document.createElement("textarea");output.rows=5;output.placeholder=choose(lang,"Paste the field value only; review accuracy first.","الصق قيمة الحقل فقط بعد مراجعتها.");panel.appendChild(output);
+   direct.onclick=async()=>{
+    if(!window.LDSDirectAI){status.textContent=choose(lang,"AI client unavailable.","خدمة الذكاء الاصطناعي غير متاحة.");return}
+    direct.disabled=true;status.textContent=choose(lang,"Generating suggestion…","جارٍ إنشاء الاقتراح…");
+    try{output.value=await window.LDSDirectAI.generate(p.value);status.textContent=choose(lang,"Review the suggestion before inserting.","راجع الاقتراح قبل الإدراج.");}
+    catch(e){status.textContent=e.message||String(e)}
+    finally{direct.disabled=false}
+   };
    const insert=document.createElement("button");insert.type="button";insert.className="btn primary";insert.style.marginTop="8px";insert.textContent=choose(lang,"Insert reviewed value","إدراج القيمة المُراجعة");panel.appendChild(insert);
    const note=document.createElement("p");note.textContent=choose(lang,"No AI service is called by this website. Do not paste private student data. For select fields, the suggestion must match an available option.","لا يتصل الموقع بخدمة ذكاء اصطناعي. تجنب بيانات الطلبة الخاصة. يجب أن تتطابق القيم في القوائم مع الخيارات المتاحة.");panel.appendChild(note);
    insert.onclick=()=>{
