@@ -25,63 +25,35 @@ function prompt(d,a,lang,mode,format="md"){
  ].join("\n");
 }
 function mount(design,lang){
- document.querySelectorAll('textarea[data-prop="resource"][data-act]').forEach(field=>{
-  const i=Number(field.dataset.act);
-  if(field.dataset.resourceAi) return;
-  field.dataset.resourceAi="1";
-  const button=document.querySelector('[data-resource-ai-button="'+i+'"]') || document.createElement("button");
-  if(!button.parentNode){button.type="button";button.className="btn";button.textContent=L("✨ مساعد الموارد بالذكاء الاصطناعي","✨ AI Resource Assistant",lang);field.insertAdjacentElement("afterend",button);}
-  const panel=document.createElement("div");panel.hidden=true;panel.className="card";panel.style.marginTop="10px";field.parentNode.appendChild(panel);
-  button.addEventListener("click",()=>{
-   panel.hidden=!panel.hidden;if(panel.hidden)return;
-   panel.innerHTML='<h3>'+L("مساعد الموارد التعليمية","Learning Resource Assistant",lang)+'</h3><p>'+L("اختر المهمة، وانسخ الطلب إلى أداة ذكاء اصطناعي. راجع الناتج والصقه أدناه قبل إضافته.","Choose a task, copy the tailored prompt to an AI tool, then review and paste its response before inserting.")+'</p>'+
-   '<div class="field"><label>'+L("نوع المساعدة","Assistance type",lang)+'</label><select data-ra-mode><option value="generate">'+L("إنشاء موارد وتعليمات","Generate resources and instructions",lang)+'</option><option value="find">'+L("اقتراح مصادر تعليمية مفتوحة","Discover open resources",lang)+'</option><option value="improve">'+L("تحسين الموارد الحالية","Improve existing resources",lang)+'</option></select></div>'+
-   '<div class="field"><label>'+L("صيغة الملف المطلوب","Requested file format",lang)+'</label><select data-ra-format><option value="md">Markdown (.md)</option><option value="pdf">PDF (.pdf)</option><option value="docx">Word (.docx)</option><option value="html">HTML (.html)</option></select></div>'+
-   '<div class="field"><label>'+L("طلب الذكاء الاصطناعي (قابل للتعديل)","AI prompt (editable)",lang)+'</label><textarea rows="9" data-ra-prompt></textarea></div>'+
-   '<div class="toolbar"><button class="btn" data-ra-copy>'+L("نسخ الطلب","Copy prompt",lang)+'</button><a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">'+L("فتح ChatGPT","Open ChatGPT",lang)+'</a></div>'+
-   '<div class="field"><label>'+L("الصق النص المُراجع هنا","Paste reviewed AI output here",lang)+'</label><textarea rows="8" data-ra-result placeholder="'+L("راجع الدقة والروابط قبل الإدراج","Check accuracy and links before inserting",lang)+'"></textarea></div>'+
-   '<div class="toolbar"><button class="btn primary" data-ra-insert>'+L("إدراج في الموارد","Insert full text (plain text only)",lang)+'</button><button class="btn" data-ra-close>'+L("إغلاق","Close",lang)+'</button></div>'+
-   '<p><small>'+L("لا يُرسل الموقع بياناتك إلى خدمة ذكاء اصطناعي. النسخ واللصق يدويان. لا تُدرج بيانات شخصية أو حساسة.","The website does not send data to an AI service. Copy/paste is manual. Do not include sensitive or personal information.",lang)+'</small></p>';
-   // Rich resources should be exported as a separate file; the activity field is for concise instructions and links.
-   const resourceTools=document.createElement("div");resourceTools.className="field";resourceTools.style.marginTop="12px";
-   const resourceTitle=document.createElement("h4");resourceTitle.textContent=L("ملف موارد مستقل وروابط","Separate resource file and links",lang);resourceTools.appendChild(resourceTitle);
-   const explanation=document.createElement("p");explanation.textContent=L("احفظ النص الكامل كملف Markdown للحفاظ على معادلات LaTeX وروابط الصور، ثم ارفعه إلى Moodle أو Drive أو GitHub. الصق رابط المشاركة في الحقل أدناه. الملفات المحلية ليست روابط عامة.","Download the full resource as Markdown (.md), preserving LaTeX equations and image references. Upload it to Moodle, Drive, or GitHub, then paste its shareable URL below. A local downloaded file is not a public link.",lang);resourceTools.appendChild(explanation);
-   const downloadBtn=document.createElement("button");downloadBtn.type="button";downloadBtn.className="btn";downloadBtn.textContent=L("تنزيل ملف الموارد (.md)","Download resource file (.md)",lang);resourceTools.appendChild(downloadBtn);
-   const urlLabel=document.createElement("label");urlLabel.textContent=L("رابط المورد المنشور (https://)","Published resource URL (https://)",lang);resourceTools.appendChild(urlLabel);
-   const url=document.createElement("input");url.type="url";url.placeholder="https://";url.style.width="100%";resourceTools.appendChild(url);
-   const linkBtn=document.createElement("button");linkBtn.type="button";linkBtn.className="btn";linkBtn.style.marginTop="8px";linkBtn.textContent=L("إضافة رابط إلى تعليمات الطلبة","Add link to student instructions",lang);resourceTools.appendChild(linkBtn);
-   panel.querySelector("[data-ra-result]").parentNode.insertAdjacentElement("afterend",resourceTools);
-   downloadBtn.onclick=()=>{
-     const value=panel.querySelector("[data-ra-result]").value.trim();
-     if(!value){alert(L("الصق المحتوى أولاً","Paste or generate the resource first",lang));return}
-     const blob=new Blob([value],{type:"text/markdown;charset=utf-8"});const href=URL.createObjectURL(blob);
-     const a=document.createElement("a");a.href=href;a.download="learning-resource-activity-"+(i+1)+".md";a.click();setTimeout(()=>URL.revokeObjectURL(href),1500);
-   };
-   linkBtn.onclick=()=>{
-     const value=url.value.trim();let parsed;
-     try{parsed=new URL(value);if(parsed.protocol!=="https:")throw Error("url")}catch{alert(L("أدخل رابط HTTPS صالحاً","Enter a valid HTTPS link",lang));return}
-     const line=L("رابط المورد التعليمي: ","Learning resource: ",lang)+parsed.href;
-     field.value=(field.value.trim()?field.value.trim()+"\\n":"")+line;
-     field.dispatchEvent(new Event("change",{bubbles:true}));
-   };
-   const mode=panel.querySelector("[data-ra-mode]"),format=panel.querySelector("[data-ra-format]"),p=panel.querySelector("[data-ra-prompt]");
-   const refresh=()=>{p.value=prompt(design,design.activities[i],lang,mode.value,format.value)};
-   mode.addEventListener("change",refresh);format.addEventListener("change",refresh);refresh();
-   panel.querySelector("[data-ra-copy]").onclick=async()=>{try{await navigator.clipboard.writeText(p.value);alert(L("تم نسخ الطلب","Prompt copied",lang))}catch{p.focus();p.select();alert(L("انسخ النص المحدد يدوياً","Copy the selected text manually",lang))}};
-   const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.style.marginTop="8px";direct.textContent=L("✨ إنشاء الموارد مباشرة","✨ Generate resources directly",lang);
-   const status=document.createElement("p");status.setAttribute("role","status");
-   panel.querySelector("[data-ra-prompt]").insertAdjacentElement("afterend",status);
-   status.insertAdjacentElement("beforebegin",direct);
-   direct.onclick=async()=>{direct.disabled=true;status.textContent=L("جارٍ الإنشاء…","Generating…",lang);try{panel.querySelector("[data-ra-result]").value=await window.LDSDirectAI.generate(p.value);status.textContent=L("راجع المحتوى قبل الإدراج","Review before inserting",lang)}catch(e){status.textContent=e.message||String(e)}finally{direct.disabled=false}};
-   panel.querySelector("[data-ra-insert]").onclick=()=>{
-    const val=panel.querySelector("[data-ra-result]").value.trim();
-    if(!val){alert(L("الصق المحتوى المُراجع أولاً","Paste reviewed content first",lang));return}
-    const current=field.value.trim();
-    field.value=(current&&current!=="Provide relevant resources and clear instructions"?current+"\n\n":"")+val;
-    field.dispatchEvent(new Event("change",{bubbles:true}));
-   };
-   panel.querySelector("[data-ra-close]").onclick=()=>{panel.hidden=true};
-  });
+ const t=(en,ar)=>L(ar,en,lang);
+ document.querySelectorAll("[data-resource-ai-button]").forEach(button=>{
+  if(button.dataset.ready)return;button.dataset.ready="1";
+  const i=Number(button.dataset.resourceAiButton),a=design.activities[i];
+  const root=document.querySelector('[data-attachments="'+i+'"]');
+  const panel=document.createElement("section");panel.className="card";panel.hidden=true;button.insertAdjacentElement("afterend",panel);
+  const add=(tag,txt,parent=panel)=>{const e=document.createElement(tag);e.textContent=txt;parent.appendChild(e);return e};
+  const btn=(txt,parent=panel)=>{const e=add("button",txt,parent);e.type="button";e.className="btn";return e};
+  add("h3",t("1. Generate your resource","١. إنشاء المورد"));
+  const mode=add("select","");for(const [v,en,ar] of [["generate","Generate learning resource","إنشاء مورد"],["find","Discover open resources","اكتشاف موارد مفتوحة"],["improve","Improve existing resource","تحسين مورد"]]){const o=add("option",t(en,ar),mode);o.value=v}
+  const format=add("select","");for(const [v,n] of [["md","Markdown (.md)"],["pdf","PDF (.pdf)"],["docx","Word (.docx)"],["html","HTML (.html)"]]){const o=add("option",n,format);o.value=v}
+  mode.setAttribute("aria-label",t("Assistance type","نوع المساعدة"));format.setAttribute("aria-label",t("File format","صيغة الملف"));
+  add("p",t("Copy the prompt, open ChatGPT, and download the generated file to your computer.","انسخ الطلب وافتح ChatGPT ونزّل الملف الناتج إلى جهازك."));
+  const details=add("details","");add("summary",t("View or edit AI prompt","عرض أو تعديل الطلب"),details);const p=add("textarea","",details);p.rows=8;p.style.width="100%";
+  const refresh=()=>{p.value=prompt(design,a,lang,mode.value,format.value)};mode.onchange=refresh;format.onchange=refresh;refresh();
+  const copy=btn(t("Copy prompt","نسخ الطلب"));copy.classList.add("primary");const link=add("a","ChatGPT ↗");link.href="https://chatgpt.com/";link.target="_blank";link.rel="noopener noreferrer";link.className="btn";
+  const status=add("p","");status.setAttribute("role","status");
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);status.textContent=t("Prompt copied. Open ChatGPT, paste it, and download the file.","تم النسخ. افتح ChatGPT والصق الطلب ونزّل الملف.")}catch{details.open=true;p.focus();p.select();status.textContent=t("Copy the selected prompt manually.","انسخ الطلب المحدد يدوياً.")}};
+  add("h3",t("2. Import your downloaded file","٢. استيراد الملف الناتج"));
+  add("p",t("Choose the file downloaded from ChatGPT. Then click Confirm & attach resource in the resource list above.","اختر الملف الذي نزّلته من ChatGPT ثم اضغط تأكيد وإرفاق المورد في القائمة أعلاه."));
+  const importBtn=btn(t("Import ChatGPT file","استيراد ملف ChatGPT"));importBtn.classList.add("primary");importBtn.onclick=()=>{if(root&&root.ldsImport)root.ldsImport();else status.textContent=t("Use Import resource file in the resources section.","استخدم استيراد ملف المورد في قسم الموارد.")};
+  const fallback=add("details","");add("summary",t("Alternative: AI returned text instead of a file","بديل: أعاد الذكاء الاصطناعي نصاً بدلاً من ملف"),fallback);
+  const output=add("textarea","",fallback);output.rows=7;output.placeholder=t("Paste resource Markdown here","الصق نص المورد هنا");output.style.width="100%";
+  const direct=btn(t("Generate Markdown text with AI","إنشاء نص Markdown بالذكاء الاصطناعي"),fallback);
+  direct.onclick=async()=>{direct.disabled=true;status.textContent=t("Generating…","جارٍ الإنشاء…");try{output.value=await window.LDSDirectAI.generate(prompt(design,a,lang,mode.value,"md")+"\nReturn the complete Markdown source text, not a file or download link.");status.textContent=t("Review the text before attaching.","راجع النص قبل الإرفاق.")}catch(e){status.textContent=String(e.message||e)}finally{direct.disabled=false}};
+  const attach=btn(t("Review & attach Markdown text as file","مراجعة وإرفاق النص كملف Markdown"),fallback);attach.onclick=()=>{if(!output.value.trim()){status.textContent=t("Paste resource text first.","الصق النص أولاً.");return}if(root&&root.ldsStage)root.ldsStage(new File([output.value],"learning-resource-"+(i+1)+".md",{type:"text/markdown"}))};
+  const close=btn(t("Close assistant","إغلاق المساعد"));close.onclick=()=>{panel.hidden=true};
+  add("small",t("Files are stored locally; use published Moodle or Drive links for student sharing. Direct AI sends the prompt to the configured provider. Review all materials.","تحفظ الملفات محلياً؛ استخدم روابط Moodle أو Drive للمشاركة. يرسل الذكاء الاصطناعي المباشر الطلب إلى المزود المهيأ. راجع المحتوى."));
+  button.onclick=()=>{panel.hidden=!panel.hidden;if(!panel.hidden)refresh()};
  });
 }
 window.LDSResourceAssistant={mount,prompt};
