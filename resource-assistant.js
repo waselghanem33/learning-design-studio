@@ -15,7 +15,7 @@ function prompt(d,a,lang,mode,format="md"){
  "Discipline: "+(d.discipline||"Not specified"),"Authentic problem: "+(d.problem||"Not specified"),
  "Learning outcomes: "+(d.outcomes||"Not specified"),
  "Activity: "+(a.title||"Untitled"),"Learning type: "+a.type,"Phase: "+a.phase,
- "Duration: "+a.minutes+" minutes","Group: "+a.group,"Delivery: "+a.mode,
+ window.LDSTiming.context(d,a),"Duration: "+a.minutes+" minutes","Group: "+a.group,"Delivery: "+a.mode,
  "Teacher role: "+(a.teacher||"Not specified"),"Assessment: "+(a.assessment||"Not specified"),
  "Existing resources and instructions: "+(a.resource||"None"),
  "Produce: (1) 2-3 suitable resource formats and their learning purpose; (2) one ready-to-use student-facing activity brief with steps, time allocation and expected output; (3) formative assessment and feedback guidance; (4) accessibility and low-bandwidth alternatives; (5) optional credible OER discovery sources.",
