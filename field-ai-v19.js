@@ -18,7 +18,7 @@ function buildPrompt(d,a,key,lang){
  "Task: "+guidance[key],
  "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),
  "Authentic problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),
- "Planned duration: "+safe(d.duration)+" minutes",
+ "Planned duration: "+safe(d.duration)+" minutes",window.LDSTiming.context(d,a),
  a?"Activity: "+safe(a.title)+" | Type: "+safe(a.type)+" | Phase: "+safe(a.phase)+" | Minutes: "+safe(a.minutes)+" | Group: "+safe(a.group)+" | Mode: "+safe(a.mode):"Whole-module design field.",
  a?"Teacher role: "+safe(a.teacher)+" | Resources: "+safe(a.resource)+" | Assessment: "+safe(a.assessment):"",
  "Target field: "+(names[key]||[key])[0],"Current value: "+safe(a?a[key]:d[key]),
@@ -130,7 +130,7 @@ function mountActivityCoach(d,lang){
     "Use phase before/during/after; type Acquisition/Inquiry/Discussion/Practice/Collaboration/Production; minutes a positive number.",
     "Keep resource as concise student-facing instructions only, including task, time and submission. Do not put full learning materials in this field.",
     "Only include fields that genuinely need improvement. For each field use a replacement value, not an explanation. Put pedagogical explanation in rationale. Never invent links or citations.",
-    "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),"Problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),"Session minutes: "+safe(d.duration),"Current activity: "+JSON.stringify(Object.fromEntries(keys.map(k=>[k,a[k]])))
+    "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),"Problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),"Session minutes: "+safe(d.duration),window.LDSTiming.context(d,a),"Current activity: "+JSON.stringify(Object.fromEntries(keys.map(k=>[k,a[k]])))
    ].join("\n");prompt.setAttribute("aria-label",t("Prompt to send to ChatGPT","الطلب لإرساله إلى ChatGPT"));
    const actions=add("div","");actions.className="toolbar lds-field-ai-actions";
    const button=(txt,primary=false)=>{const b=add("button",txt,actions);b.type="button";b.className="btn"+(primary?" primary":"");return b};
@@ -187,6 +187,7 @@ function mountActivityCoach(d,lang){
    apply.onclick=()=>{
     const selected=[...changes.querySelectorAll("[data-approve]:checked")].map(e=>e.dataset.approve);
     if(!selected.length){status.textContent=t("Select at least one change to apply.","حدد تغييراً واحداً على الأقل.");return;}
+    if(selected.includes("minutes")&&!window.LDSTiming.fits(d,a.minutes,proposed.minutes)){status.textContent=t("This duration exceeds the total time budget. Uncheck Minutes or revise the proposal.","هذه المدة تتجاوز الوقت المخطط. ألغ تحديد الدقائق أو عدّل المقترح.");return;}
     const updated={...a};for(const k of selected){
      const v=proposed[k];updated[k]=k==="minutes"?Number(v):k==="phase"?v.toLowerCase():k==="type"?allowedTypes.find(x=>x.toLowerCase()===v.toLowerCase()):v;
     }
