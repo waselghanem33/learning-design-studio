@@ -14,11 +14,12 @@ function mount(design,lang){
   const title=document.createElement("input");title.type="text";title.placeholder=t("Resource title (optional)","عنوان المورد (اختياري)");title.setAttribute("aria-label",title.placeholder);
   const url=document.createElement("input");url.type="url";url.placeholder="https://...";url.setAttribute("aria-label",t("Published resource URL","رابط المورد المنشور"));
   const add=document.createElement("button");add.type="button";add.className="btn";add.textContent=t("＋ Add resource link","＋ إضافة رابط مورد");
-  const file=document.createElement("input");file.type="file";file.accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.md,.txt,.ppt,.pptx";file.style.display="none";
-  const upload=document.createElement("button");upload.type="button";upload.className="btn";upload.textContent=t("＋ Attach small local file","＋ إرفاق ملف محلي صغير");
+  const file=document.createElement("input");file.type="file";file.accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.md,.txt,.html,.ppt,.pptx";file.style.display="none";
+  const upload=document.createElement("button");upload.type="button";upload.className="btn";upload.textContent=t("＋ Import resource file","＋ إرفاق ملف محلي صغير");
+  const status=document.createElement("p");status.setAttribute("role","status");const pending=document.createElement("div");pending.hidden=true;
   const list=document.createElement("div");list.style.margin="10px 0";
   const help=document.createElement("small");help.className="muted";help.textContent=t("Local files: maximum 350 KB each. Stored inside this browser's design, not publicly accessible. For larger PDFs, images or student access, upload to Moodle/Drive first and add its link. Export JSON to back up local attachments.","الملفات المحلية: حتى ٣٥٠ كيلوبايت لكل ملف. تحفظ ضمن التصميم في هذا المتصفح فقط وليست عامة. للملفات الأكبر أو لمشاركة الطلبة، ارفعها إلى Moodle أو Drive وأضف رابطها. صدّر JSON لنسخ المرفقات احتياطياً.");
-  [title,url,add,upload,file,list,help].forEach(el=>root.appendChild(el));
+  [title,url,add,upload,file,pending,status,list,help].forEach(el=>root.appendChild(el));
   title.style.width="100%";url.style.width="100%";url.style.marginTop="6px";add.style.margin="8px 8px 8px 0";upload.style.margin="8px 0";
   function render(){
    list.replaceChildren();
@@ -33,19 +34,28 @@ function mount(design,lang){
   }
   add.onclick=()=>{let parsed;try{parsed=new URL(url.value.trim());if(parsed.protocol!=="https:")throw Error()}catch{alert(t("Enter a valid HTTPS URL.","أدخل رابط HTTPS صالحاً."));return}
    const item={kind:"link",title:title.value.trim().slice(0,140)||parsed.hostname,url:parsed.href};
-   activity.attachments.push(item);if(!persist()){activity.attachments.pop();return}title.value="";url.value="";render();
+   activity.attachments.push(item);if(!persist()){activity.attachments.pop();return}title.value="";url.value="";render();status.textContent=t("Resource link saved.","تم حفظ رابط المورد.");
   };
   upload.onclick=()=>file.click();
-  file.onchange=()=>{
-   const selected=file.files&&file.files[0];if(!selected)return;
-   if(selected.size>maxBytes){alert(t("File too large. Upload it to Moodle or Drive, then add a link here (maximum 350 KB for local files).","الملف كبير. ارفعه إلى Moodle أو Drive ثم أضف رابطه هنا (الحد الأقصى ٣٥٠ كيلوبايت)."));file.value="";return}
-   const reader=new FileReader();
-   reader.onerror=()=>alert(t("Unable to read the file.","تعذرت قراءة الملف."));
-   reader.onload=()=>{const item={kind:"file",name:selected.name,title:selected.name,size:selected.size,data:reader.result};
-    activity.attachments.push(item);if(!persist()){activity.attachments.pop();return}render();file.value="";
+  function stage(selected){
+   if(!selected)return;
+   pending.replaceChildren();pending.hidden=false;
+   const info=document.createElement("p");info.textContent=selected.name+" · "+Math.ceil(selected.size/1024)+" KB";pending.appendChild(info);
+   if(selected.size>maxBytes){info.textContent+=" — "+t("Too large for local storage. Upload to Moodle or Drive and add its link above.","الملف كبير. ارفعه إلى Moodle أو Drive وأضف رابطه أعلاه.");return}
+   const confirm=document.createElement("button");confirm.type="button";confirm.className="btn primary";confirm.textContent=t("Confirm & attach resource","تأكيد وإرفاق المورد");pending.appendChild(confirm);
+   const cancel=document.createElement("button");cancel.type="button";cancel.className="btn";cancel.textContent=t("Cancel","إلغاء");pending.appendChild(cancel);
+   cancel.onclick=()=>{pending.hidden=true;pending.replaceChildren();file.value=""};
+   confirm.onclick=()=>{confirm.disabled=true;cancel.disabled=true;const reader=new FileReader();
+    reader.onerror=()=>{status.textContent=t("Unable to read the file. Try again.","تعذرت قراءة الملف. حاول مجدداً.");confirm.disabled=false;cancel.disabled=false};
+    reader.onload=()=>{if(!root.isConnected)return;const item={kind:"file",name:selected.name,title:selected.name,size:selected.size,data:reader.result};
+     activity.attachments.push(item);if(!persist()){activity.attachments.pop();confirm.disabled=false;cancel.disabled=false;return}
+     pending.hidden=true;pending.replaceChildren();file.value="";render();status.textContent=t("✓ Resource attached and saved: ","✓ تم إرفاق المورد وحفظه: ")+selected.name;
+    };reader.readAsDataURL(selected);
    };
-   reader.readAsDataURL(selected);
-  };
+  }
+  file.onchange=()=>{stage(file.files&&file.files[0]);file.value=""};
+  root.ldsImport=()=>{root.scrollIntoView({block:"center"});file.click()};
+  root.ldsStage=selected=>{root.scrollIntoView({block:"center"});stage(selected)};
   render();
  });
 }
