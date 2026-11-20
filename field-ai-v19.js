@@ -82,10 +82,34 @@ function mount(d,lang){
 
 // One consolidated activity-level coaching action, without changing any fields automatically.
 // Activity-level coach: a guided, human-approved review workflow.
+function parseActivityReview(raw){
+ // Prefer exact JSON; only clean formatting outside quoted values.
+ const candidates=[raw.trim()];
+ const fence=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+ if(fence)candidates.push(fence[1].trim());
+ const start=raw.indexOf("{"),end=raw.lastIndexOf("}");
+ if(start>=0&&end>start)candidates.push(raw.slice(start,end+1));
+ for(const candidate of candidates){
+  try{return JSON.parse(candidate)}catch{}
+  let cleaned="",quoted=false,escaped=false;
+  for(let i=0;i<candidate.length;i++){
+   const c=candidate[i];
+   if(quoted){cleaned+=c;if(escaped)escaped=false;else if(c==="\\")escaped=true;else if(c==='"')quoted=false;continue}
+   if(c==='"'){quoted=true;cleaned+=c;continue}
+   const entity=candidate.slice(i).match(/^&(?:#x20|#32|nbsp|#160|#xA0|#10|#13);/i);
+   if(entity){cleaned+=" ";i+=entity[0].length-1;continue}
+   if(c==="\\"&&/^[ \t]*[\r\n]/.test(candidate.slice(i+1)))continue;
+   if(c===","){const tail=candidate.slice(i+1);if(/^\s*[}\]]/.test(tail))continue}
+   cleaned+=c;
+  }
+  try{return JSON.parse(cleaned)}catch{}
+ }
+ throw Error("Invalid JSON");
+}
 function mountActivityCoach(d,lang){
  const t=(en,ar)=>choose(lang,en,ar);
  const keys=["title","phase","type","minutes","group","mode","teacher","resource","assessment"];
- const labels={title:["Activity title","عنوان النشاط"],phase:["Phase","المرحلة"],type:["Learning type","نوع التعلم"],minutes:["Minutes","الدقائق"],group:["Group size","حجم المجموعة"],mode:["Delivery mode","نمط التدريس"],teacher:["Teacher role","دور المعلم"],resource:["Resources and instructions","الموارد والتعليمات"],assessment:["Assessment and feedback","التقييم والتغذية الراجعة"]};
+ const labels={title:["Activity title","عنوان النشاط"],phase:["Phase","المرحلة"],type:["Learning type","نوع التعلم"],minutes:["Minutes","الدقائق"],group:["Group size","حجم المجموعة"],mode:["Delivery mode","نمط التدريس"],teacher:["Teacher role","دور المعلم"],resource:["Student instructions","تعليمات الطلبة"],assessment:["Assessment and feedback","التقييم والتغذية الراجعة"]};
  const allowedPhase=["before","during","after"];
  const allowedTypes=["Acquisition","Inquiry","Discussion","Practice","Collaboration","Production"];
  document.querySelectorAll(".activity").forEach((card,i)=>{
@@ -104,8 +128,9 @@ function mountActivityCoach(d,lang){
     "Review this activity for alignment with learning outcomes, feasibility, inclusive participation, assessment and time.",
     "IMPORTANT: Return ONLY a valid JSON object, without markdown fences, with optional keys: title, phase, type, minutes, group, mode, teacher, resource, assessment, rationale.",
     "Use phase before/during/after; type Acquisition/Inquiry/Discussion/Practice/Collaboration/Production; minutes a positive number.",
+    "Keep resource as concise student-facing instructions only, including task, time and submission. Do not put full learning materials in this field.",
     "Only include fields that genuinely need improvement. For each field use a replacement value, not an explanation. Put pedagogical explanation in rationale. Never invent links or citations.",
-    "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),"Problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),"Session minutes: "+safe(d.duration),"Current activity: "+JSON.stringify(a)
+    "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),"Problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),"Session minutes: "+safe(d.duration),"Current activity: "+JSON.stringify(Object.fromEntries(keys.map(k=>[k,a[k]])))
    ].join("\n");prompt.setAttribute("aria-label",t("Prompt to send to ChatGPT","الطلب لإرساله إلى ChatGPT"));
    const actions=add("div","");actions.className="toolbar lds-field-ai-actions";
    const button=(txt,primary=false)=>{const b=add("button",txt,actions);b.type="button";b.className="btn"+(primary?" primary":"");return b};
@@ -114,7 +139,7 @@ function mountActivityCoach(d,lang){
    const status=add("p","");status.setAttribute("role","status");
    const pasteLabel=add("label",t("Step 2 — Paste the FULL ChatGPT response here (NOT in Resources and student instructions)","الخطوة ٢ — الصق رد ChatGPT كاملاً هنا (وليس في حقل الموارد وتعليمات الطلبة)"));
    const result=add("textarea","");result.rows=8;result.placeholder=t('Paste the response from ChatGPT here, then click "Review proposed changes".','الصق استجابة ChatGPT هنا ثم اضغط مراجعة التغييرات المقترحة.');result.setAttribute("aria-label",pasteLabel.textContent);
-   const review=add("button",t("Review proposed changes","مراجعة التغييرات المقترحة"));review.type="button";review.className="btn primary";
+   const review=add("button",t("Clean and review proposed changes","تنظيف ومراجعة التغييرات المقترحة"));review.type="button";review.className="btn primary";
    const comparison=add("div","");comparison.hidden=true;
    const rationale=add("p","",comparison);rationale.className="muted";
    const changes=add("div","",comparison);
@@ -139,7 +164,7 @@ function mountActivityCoach(d,lang){
     let raw=result.value.trim();if(!raw){status.textContent=t("Paste the AI response into Step 2 first.","الصق استجابة الذكاء الاصطناعي في الخطوة ٢ أولاً.");return;}
     try{
      raw=raw.replace(/^```(?:json)?\s*/i,"").replace(/```\s*$/,"").trim();
-     const obj=JSON.parse(raw);
+     const obj=parseActivityReview(raw);
      if(!obj||Array.isArray(obj)||typeof obj!=="object")throw Error("format");
      keys.forEach(k=>{
       if(!(k in obj)||obj[k]===null||typeof obj[k]==="object")return;
@@ -156,8 +181,8 @@ function mountActivityCoach(d,lang){
      });
      rationale.textContent=typeof obj.rationale==="string"?obj.rationale:"";
      if(!Object.keys(proposed).length){status.textContent=t("No valid field changes were found. The activity has not been changed.","لم يتم العثور على تغييرات صالحة. لم يُعدّل النشاط.");return;}
-     comparison.hidden=false;status.textContent=t("Compare current and proposed values. Uncheck any change you do not want.","قارن القيم الحالية والمقترحة وأزل التحديد عن أي تغيير لا تريده.");
-    }catch{status.textContent=t("The response is not valid JSON. Ask ChatGPT: 'Return only the JSON object, without markdown or commentary.' Nothing has been changed.","الاستجابة ليست JSON صالحاً. اطلب من ChatGPT إعادة كائن JSON فقط دون شرح. لم يُعدّل شيء.");}
+     comparison.hidden=false;apply.scrollIntoView({block:"nearest",behavior:"smooth"});status.textContent=t("Review the checked changes below, then press Apply selected changes to update the activity.","راجع التغييرات المحددة أدناه ثم اضغط تطبيق التغييرات المحددة لتحديث النشاط.");
+    }catch{status.textContent=t("The response could not be safely cleaned. Copy the complete response using ChatGPT’s Copy button. Ask ChatGPT: 'Return only the JSON object, without markdown or commentary.' Nothing has been changed.","الاستجابة ليست JSON صالحاً. اطلب من ChatGPT إعادة كائن JSON فقط دون شرح. لم يُعدّل شيء.");}
    };
    apply.onclick=()=>{
     const selected=[...changes.querySelectorAll("[data-approve]:checked")].map(e=>e.dataset.approve);
