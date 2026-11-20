@@ -39,9 +39,9 @@ function mount(d,lang){
   const label=parent.querySelector("label");if(label&&key!=="assessment"){const heading=document.createElement("div");heading.className="lds-field-heading";label.parentNode.insertBefore(heading,label);heading.appendChild(label);heading.appendChild(btn);}else parent.appendChild(btn);
   const panel=document.createElement("div");panel.hidden=true;panel.className="card lds-field-ai-panel";parent.insertAdjacentElement("afterend",panel);
   btn.addEventListener("click",()=>{
-   panel.hidden=!panel.hidden;if(panel.hidden)return;
+   if(!window.LDSAINav.toggle(panel,btn,lang))return;
    const a=i===null?null:d.activities[i];
-   panel.replaceChildren();
+   panel.replaceChildren();window.LDSAINav.header(panel,lang);
    const title=document.createElement("h3");title.textContent=choose(lang,"AI Design Assistant — ","مساعد التصميم — ")+(names[key][lang==="ar"?1:0]);panel.appendChild(title);
    const intro=document.createElement("p");intro.textContent=choose(lang,"Copy the tailored prompt into ChatGPT. Review the response, then paste only the field value below.","انسخ الطلب إلى ChatGPT، وراجع الاستجابة، ثم الصق قيمة الحقل فقط أدناه.");panel.appendChild(intro);
    const p=document.createElement("textarea");p.rows=8;p.value=buildPrompt(d,a,key,lang);p.setAttribute("aria-label","Editable AI prompt");panel.appendChild(p);
@@ -74,7 +74,7 @@ function mount(d,lang){
      const n=Number(value);if(!Number.isFinite(n)||n<0||(key==="minutes"&&n===0)){alert(choose(lang,"Enter a valid positive number.","أدخل رقماً موجباً صالحاً."));return}el.value=String(n);
     }else el.value=value;
     el.dispatchEvent(new Event(el.hasAttribute("data-act")?"change":"input",{bubbles:true}));
-    if(el.hasAttribute("data-field")){panel.hidden=true;alert(choose(lang,"Suggestion inserted. Review the complete design before export.","تم الإدراج. راجع التصميم قبل التصدير."))}
+    if(el.hasAttribute("data-field")){window.LDSAINav.close();alert(choose(lang,"Suggestion inserted. Review the complete design before export.","تم الإدراج. راجع التصميم قبل التصدير."))}
    };
   });
  });
@@ -118,8 +118,8 @@ function mountActivityCoach(d,lang){
   const del=header.querySelector("[data-delete]");if(del)header.insertBefore(btn,del);else header.appendChild(btn);
   const panel=document.createElement("section");panel.className="card lds-field-ai-panel lds-activity-review";panel.hidden=true;card.insertBefore(panel,card.querySelector(".grid"));
   btn.onclick=()=>{
-   panel.hidden=!panel.hidden;if(panel.hidden)return;
-   const a=d.activities[i];panel.replaceChildren();
+   if(!window.LDSAINav.toggle(panel,btn,lang))return;
+   const a=d.activities[i];panel.replaceChildren();window.LDSAINav.header(panel,lang);
    const add=(tag,content,parent=panel)=>{const e=document.createElement(tag);e.textContent=content;parent.appendChild(e);return e};
    add("h3",t("Improve activity: paste → review → apply","تحسين النشاط: الصق ← راجع ← طبّق"));
    add("p",t("1. Generate or paste an AI review. 2. Inspect proposed changes. 3. Apply only the changes you approve. Your original activity stays unchanged until you apply.","١. أنشئ مراجعة أو الصقها. ٢. افحص التعديلات المقترحة. ٣. طبّق ما توافق عليه فقط. يبقى النشاط الأصلي دون تغيير حتى التطبيق."));
