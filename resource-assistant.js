@@ -51,9 +51,9 @@ function mount(design,lang){
   const direct=btn(t("Generate Markdown text with AI","إنشاء نص Markdown بالذكاء الاصطناعي"),fallback);
   direct.onclick=async()=>{direct.disabled=true;status.textContent=t("Generating…","جارٍ الإنشاء…");try{output.value=await window.LDSDirectAI.generate(prompt(design,a,lang,mode.value,"md")+"\nReturn the complete Markdown source text, not a file or download link.");status.textContent=t("Review the text before attaching.","راجع النص قبل الإرفاق.")}catch(e){status.textContent=String(e.message||e)}finally{direct.disabled=false}};
   const attach=btn(t("Review & attach Markdown text as file","مراجعة وإرفاق النص كملف Markdown"),fallback);attach.onclick=()=>{if(!output.value.trim()){status.textContent=t("Paste resource text first.","الصق النص أولاً.");return}if(root&&root.ldsStage)root.ldsStage(new File([output.value],"learning-resource-"+(i+1)+".md",{type:"text/markdown"}))};
-  const close=btn(t("Close assistant","إغلاق المساعد"));close.onclick=()=>{panel.hidden=true};
+  const close=btn(t("Exit AI assistant","خروج من المساعد"));close.onclick=()=>window.LDSAINav.close();window.LDSAINav.header(panel,lang);
   add("small",t("Files are stored locally; use published Moodle or Drive links for student sharing. Direct AI sends the prompt to the configured provider. Review all materials.","تحفظ الملفات محلياً؛ استخدم روابط Moodle أو Drive للمشاركة. يرسل الذكاء الاصطناعي المباشر الطلب إلى المزود المهيأ. راجع المحتوى."));
-  button.onclick=()=>{panel.hidden=!panel.hidden};
+  button.onclick=()=>window.LDSAINav.toggle(panel,button,lang);
  });
 }
 window.LDSResourceAssistant={mount,prompt};
