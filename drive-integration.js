@@ -3,7 +3,7 @@
 const scope="https://www.googleapis.com/auth/drive.file";
 let token="",expiry=0;
 const key="lds-google-client-id";
-const defaultClientId=""; // Public OAuth web client ID, supplied by administrator
+const defaultClientId="86033499039-040f45pt8j1m9u9hn9elef62e2il1pu6.apps.googleusercontent.com"; // Public OAuth web client ID, supplied by administrator
 const clientId=()=>localStorage.getItem(key)||defaultClientId;
 async function connect(){
  const id=clientId();
