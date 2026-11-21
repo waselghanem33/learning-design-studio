@@ -49,7 +49,7 @@ function mount(d,lang){
    const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.textContent=choose(lang,"Copy prompt","نسخ الطلب");actions.appendChild(copy);copy.classList.add("lds-ai-secondary");
    copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);copy.textContent=choose(lang,"Copied!","تم النسخ")}catch{p.focus();p.select();alert(choose(lang,"Please copy the selected prompt manually.","انسخ النص المحدد يدوياً."))}};
    const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT");actions.appendChild(fallback);
-   fallback.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);window.open("https://chatgpt.com/","_blank","noopener,noreferrer");status.textContent=choose(lang,"Prompt copied. Paste it into ChatGPT, then paste the reviewed field value below.","تم نسخ الطلب. الصقه في ChatGPT ثم الصق القيمة المُراجعة أدناه.");}catch{p.focus();p.select();status.textContent=choose(lang,"Copy the selected prompt, then use Open ChatGPT.","انسخ الطلب المحدد ثم افتح ChatGPT.");}};
+   fallback.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);window.LDSAINav.openChatGPT();status.textContent=choose(lang,"Prompt copied. Paste it into ChatGPT, then paste the reviewed field value below.","تم نسخ الطلب. الصقه في ChatGPT ثم الصق القيمة المُراجعة أدناه.");}catch{p.focus();p.select();status.textContent=choose(lang,"Copy the selected prompt, then use Open ChatGPT.","انسخ الطلب المحدد ثم افتح ChatGPT.");}};
    const link=document.createElement("a");link.href="https://chatgpt.com/";link.target="_blank";link.rel="noopener noreferrer";link.className="btn";link.textContent=choose(lang,"Open ChatGPT","فتح ChatGPT");actions.appendChild(link);link.classList.add("lds-ai-secondary");
    const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.textContent=choose(lang,"✨ Generate directly with AI","✨ إنشاء مباشر بالذكاء الاصطناعي");actions.insertBefore(direct,actions.firstChild);
    const status=document.createElement("p");status.setAttribute("role","status");panel.appendChild(status);
@@ -147,7 +147,7 @@ function mountActivityCoach(d,lang){
    const cancel=add("button",t("Discard suggestions","تجاهل الاقتراحات"),comparison);cancel.type="button";cancel.className="btn";
    add("p",t("Only checked fields are updated. Your other activities stay untouched. Approved changes are saved in this browser; use Export JSON for a backup.","تُحدّث الحقول المحددة فقط وتبقى الأنشطة الأخرى دون تغيير. تُحفظ التعديلات الموافق عليها في هذا المتصفح؛ استخدم تصدير JSON لنسخة احتياطية."));
    fallback.onclick=async()=>{
-    window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
+    window.LDSAINav.openChatGPT();
     try{await navigator.clipboard.writeText(prompt.value);status.textContent=t("Prompt copied. Paste it in ChatGPT, then return here and paste the full response into Step 2.","تم نسخ الطلب. الصقه في ChatGPT ثم عد والصق الاستجابة كاملة في الخطوة ٢.");}
     catch{prompt.focus();prompt.select();status.textContent=t("Copy the selected prompt manually and paste it in ChatGPT.","انسخ الطلب المحدد يدوياً والصقه في ChatGPT.");}
    };
