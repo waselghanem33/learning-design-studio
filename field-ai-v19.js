@@ -48,18 +48,18 @@ function mount(d,lang){
    const actions=document.createElement("div");actions.className="toolbar lds-field-ai-actions";panel.appendChild(actions);
    const copy=document.createElement("button");copy.type="button";copy.className="btn";copy.textContent=choose(lang,"Copy prompt","نسخ الطلب");actions.appendChild(copy);copy.classList.add("lds-ai-secondary");
    copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);copy.textContent=choose(lang,"Copied!","تم النسخ")}catch{p.focus();p.select();alert(choose(lang,"Please copy the selected prompt manually.","انسخ النص المحدد يدوياً."))}};
-   const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT");actions.appendChild(fallback);
-   fallback.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);window.LDSAINav.openChatGPT();status.textContent=choose(lang,"Prompt copied. Paste it into ChatGPT, then paste the reviewed field value below.","تم نسخ الطلب. الصقه في ChatGPT ثم الصق القيمة المُراجعة أدناه.");}catch{p.focus();p.select();status.textContent=choose(lang,"Copy the selected prompt, then use Open ChatGPT.","انسخ الطلب المحدد ثم افتح ChatGPT.");}};
+   const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt","نسخ الطلب");actions.appendChild(fallback);
+   fallback.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);status.textContent=choose(lang,"Prompt copied. Paste it into ChatGPT, then paste the reviewed field value below.","تم نسخ الطلب. الصقه في ChatGPT ثم الصق القيمة المُراجعة أدناه.");}catch{p.focus();p.select();status.textContent=choose(lang,"Copy the selected prompt, then use Open ChatGPT.","انسخ الطلب المحدد ثم افتح ChatGPT.");}};
    const link=document.createElement("a");link.href="https://chatgpt.com/";link.target="_blank";link.rel="noopener noreferrer";link.className="btn";link.textContent=choose(lang,"Open ChatGPT","فتح ChatGPT");actions.appendChild(link);link.classList.add("lds-ai-secondary");
    const direct=document.createElement("button");direct.type="button";direct.className="btn primary";direct.textContent=choose(lang,"✨ Generate directly with AI","✨ إنشاء مباشر بالذكاء الاصطناعي");actions.insertBefore(direct,actions.firstChild);
    const status=document.createElement("p");status.setAttribute("role","status");panel.appendChild(status);
    const outputLabel=document.createElement("label");outputLabel.textContent=choose(lang,"Reviewed suggestion to insert","الاقتراح المُراجع للإدراج");panel.appendChild(outputLabel);
    const output=document.createElement("textarea");output.rows=5;output.placeholder=choose(lang,"Paste the field value only; review accuracy first.","الصق قيمة الحقل فقط بعد مراجعتها.");panel.appendChild(output);
    direct.onclick=async()=>{
-    if(!window.LDSDirectAI){status.textContent=choose(lang,"Direct AI is unavailable. Use Copy prompt & open ChatGPT.","الإنشاء المباشر غير متاح. استخدم نسخ الطلب وفتح ChatGPT.");return}
+    if(!window.LDSDirectAI){status.textContent=choose(lang,"Direct AI is unavailable. Use Copy prompt.","الإنشاء المباشر غير متاح. استخدم نسخ الطلب.");return}
     direct.disabled=true;status.textContent=choose(lang,"Generating suggestion…","جارٍ إنشاء الاقتراح…");
     try{output.value=await window.LDSDirectAI.generate(p.value);status.textContent=choose(lang,"Review the suggestion before inserting.","راجع الاقتراح قبل الإدراج.");}
-    catch(e){const reason=e&&e.code;const fallbackMessage=reason==="quota"?choose(lang,"Direct AI credits or quota are exhausted.","نفدت أرصدة أو حصة واجهة الذكاء الاصطناعي."):reason==="rate_limit"?choose(lang,"Direct AI is temporarily rate-limited.","تم بلوغ حد الطلبات المؤقت."):reason==="auth"?choose(lang,"Direct AI authentication needs administrator attention.","تحتاج مصادقة الخدمة إلى مراجعة المسؤول."):choose(lang,"Direct AI is currently unavailable.","الإنشاء المباشر غير متاح حالياً.");status.textContent=fallbackMessage+" "+choose(lang,"Copy the tailored prompt and open ChatGPT to continue; your design is preserved.","انسخ الطلب المخصص وافتح ChatGPT للمتابعة؛ تصميمك محفوظ.");}
+    catch(e){const reason=e&&e.code;const fallbackMessage=reason==="quota"?choose(lang,"Direct AI credits or quota are exhausted.","نفدت أرصدة أو حصة واجهة الذكاء الاصطناعي."):reason==="rate_limit"?choose(lang,"Direct AI is temporarily rate-limited.","تم بلوغ حد الطلبات المؤقت."):reason==="auth"?choose(lang,"Direct AI authentication needs administrator attention.","تحتاج مصادقة الخدمة إلى مراجعة المسؤول."):choose(lang,"Direct AI is currently unavailable.","الإنشاء المباشر غير متاح حالياً.");status.textContent=fallbackMessage+" "+choose(lang,"Copy the tailored prompt and switch to your ChatGPT tab; your design is preserved.","انسخ الطلب المخصص وافتح ChatGPT للمتابعة؛ تصميمك محفوظ.");}
     finally{direct.disabled=false}
    };
    const insert=document.createElement("button");insert.type="button";insert.className="btn primary";insert.style.marginTop="8px";insert.textContent=choose(lang,"Insert reviewed value","إدراج القيمة المُراجعة");panel.appendChild(insert);
@@ -135,7 +135,7 @@ function mountActivityCoach(d,lang){
    const actions=add("div","");actions.className="toolbar lds-field-ai-actions";
    const button=(txt,primary=false)=>{const b=add("button",txt,actions);b.type="button";b.className="btn"+(primary?" primary":"");return b};
    const direct=button(t("✨ Generate with AI","✨ إنشاء بالذكاء الاصطناعي"),true);
-   const fallback=button(t("Copy prompt & open ChatGPT","نسخ الطلب وفتح ChatGPT"));
+   const fallback=button(t("Copy prompt","نسخ الطلب"));
    const status=add("p","");status.setAttribute("role","status");
    const pasteLabel=add("label",t("Step 2 — Paste the FULL ChatGPT response here (NOT in Resources and student instructions)","الخطوة ٢ — الصق رد ChatGPT كاملاً هنا (وليس في حقل الموارد وتعليمات الطلبة)"));
    const result=add("textarea","");result.rows=8;result.placeholder=t('Paste the response from ChatGPT here, then click "Review proposed changes".','الصق استجابة ChatGPT هنا ثم اضغط مراجعة التغييرات المقترحة.');result.setAttribute("aria-label",pasteLabel.textContent);
@@ -147,7 +147,7 @@ function mountActivityCoach(d,lang){
    const cancel=add("button",t("Discard suggestions","تجاهل الاقتراحات"),comparison);cancel.type="button";cancel.className="btn";
    add("p",t("Only checked fields are updated. Your other activities stay untouched. Approved changes are saved in this browser; use Export JSON for a backup.","تُحدّث الحقول المحددة فقط وتبقى الأنشطة الأخرى دون تغيير. تُحفظ التعديلات الموافق عليها في هذا المتصفح؛ استخدم تصدير JSON لنسخة احتياطية."));
    fallback.onclick=async()=>{
-    window.LDSAINav.openChatGPT();
+    
     try{await navigator.clipboard.writeText(prompt.value);status.textContent=t("Prompt copied. Paste it in ChatGPT, then return here and paste the full response into Step 2.","تم نسخ الطلب. الصقه في ChatGPT ثم عد والصق الاستجابة كاملة في الخطوة ٢.");}
     catch{prompt.focus();prompt.select();status.textContent=t("Copy the selected prompt manually and paste it in ChatGPT.","انسخ الطلب المحدد يدوياً والصقه في ChatGPT.");}
    };
@@ -155,7 +155,7 @@ function mountActivityCoach(d,lang){
     if(!window.LDSDirectAI){status.textContent=t("Direct AI unavailable. Use ChatGPT instead.","الخدمة المباشرة غير متاحة. استخدم ChatGPT.");return;}
     direct.disabled=true;status.textContent=t("Generating review…","جارٍ إنشاء المراجعة…");
     try{result.value=await window.LDSDirectAI.generate(prompt.value);status.textContent=t('Review generated. Click "Review proposed changes" below.','اكتملت المراجعة. اضغط مراجعة التغييرات المقترحة أدناه.');}
-    catch{status.textContent=t("Direct AI unavailable or quota exceeded. Use Copy prompt & open ChatGPT; your work is preserved.","الخدمة غير متاحة أو نفدت الحصة. استخدم نسخ الطلب وفتح ChatGPT؛ عملك محفوظ.");}
+    catch{status.textContent=t("Direct AI unavailable or quota exceeded. Use Copy prompt; your work is preserved.","الخدمة غير متاحة أو نفدت الحصة. استخدم نسخ الطلب؛ عملك محفوظ.");}
     finally{direct.disabled=false;}
    };
    let proposed={};
