@@ -44,7 +44,7 @@ function mount(d,lang){
    panel.replaceChildren();window.LDSAINav.header(panel,lang);
    const title=document.createElement("h3");title.textContent=choose(lang,"AI Design Assistant — ","مساعد التصميم — ")+(names[key][lang==="ar"?1:0]);panel.appendChild(title);
    const intro=document.createElement("p");intro.textContent=choose(lang,"Copy the tailored prompt into ChatGPT. Review the response, then paste only the field value below.","انسخ الطلب إلى ChatGPT، وراجع الاستجابة، ثم الصق قيمة الحقل فقط أدناه.");panel.appendChild(intro);
-   const p=document.createElement("textarea");p.rows=8;p.value=buildPrompt(d,a,key,lang);p.setAttribute("aria-label","Editable AI prompt");panel.appendChild(p);
+   const p=document.createElement("textarea");p.rows=8;p.value=buildPrompt(d,a,key,lang);p.setAttribute("aria-label","Editable AI prompt");panel.appendChild(p);window.LDSPrompts.attach(p,lang,key,()=>buildPrompt(d,a,key,lang));
    const actions=document.createElement("div");actions.className="toolbar lds-field-ai-actions";panel.appendChild(actions);
    const fallback=document.createElement("button");fallback.type="button";fallback.className="btn";fallback.textContent=choose(lang,"Copy prompt","نسخ الطلب");actions.appendChild(fallback);
    fallback.onclick=async()=>{try{await navigator.clipboard.writeText(p.value);status.textContent=choose(lang,"Prompt copied. Switch to your existing ChatGPT tab, or open ChatGPT if needed. Paste the reviewed field value below.","تم نسخ الطلب. الصقه في ChatGPT ثم الصق القيمة المُراجعة أدناه.");}catch{p.focus();p.select();status.textContent=choose(lang,"Copy the selected prompt, then use Open ChatGPT.","انسخ الطلب المحدد ثم افتح ChatGPT.");}};
@@ -121,7 +121,7 @@ function mountActivityCoach(d,lang){
    const add=(tag,content,parent=panel)=>{const e=document.createElement(tag);e.textContent=content;parent.appendChild(e);return e};
    add("h3",t("Improve activity: paste → review → apply","تحسين النشاط: الصق ← راجع ← طبّق"));
    add("p",t("1. Generate or paste an AI review. 2. Inspect proposed changes. 3. Apply only the changes you approve. Your original activity stays unchanged until you apply.","١. أنشئ مراجعة أو الصقها. ٢. افحص التعديلات المقترحة. ٣. طبّق ما توافق عليه فقط. يبقى النشاط الأصلي دون تغيير حتى التطبيق."));
-   const prompt=add("textarea","");prompt.rows=7;prompt.value=[
+   const prompt=add("textarea","");prompt.rows=7;const reviewPrompt=()=>[
     "Act as an expert university learning designer using UCL's six learning types. Respond in "+(lang==="ar"?"Arabic":"English")+".",
     "Review this activity for alignment with learning outcomes, feasibility, inclusive participation, assessment and time.",
     "IMPORTANT: Return ONLY a valid JSON object, without markdown fences, with optional keys: title, phase, type, minutes, group, mode, teacher, resource, assessment, rationale.",
@@ -129,7 +129,7 @@ function mountActivityCoach(d,lang){
     "Keep resource as concise student-facing instructions only, including task, time and submission. Do not put full learning materials in this field.",
     "Only include fields that genuinely need improvement. For each field use a replacement value, not an explanation. Put pedagogical explanation in rationale. Never invent links or citations.",
     "Course: "+safe(d.course),"Module: "+safe(d.module),"Discipline: "+safe(d.discipline),"Problem: "+safe(d.problem),"Learning outcomes: "+safe(d.outcomes),"Session minutes: "+safe(d.duration),window.LDSTiming.context(d,a),"Current activity: "+JSON.stringify(Object.fromEntries(keys.map(k=>[k,a[k]])))
-   ].join("\n");prompt.setAttribute("aria-label",t("Prompt to send to ChatGPT","الطلب لإرساله إلى ChatGPT"));
+   ].join("\n");prompt.value=reviewPrompt();window.LDSPrompts.attach(prompt,lang,"review",reviewPrompt);prompt.setAttribute("aria-label",t("Prompt to send to ChatGPT","الطلب لإرساله إلى ChatGPT"));
    const actions=add("div","");actions.className="toolbar lds-field-ai-actions";
    const button=(txt,primary=false)=>{const b=add("button",txt,actions);b.type="button";b.className="btn"+(primary?" primary":"");return b};
    const direct=button(t("✨ Generate with AI","✨ إنشاء بالذكاء الاصطناعي"),true);
