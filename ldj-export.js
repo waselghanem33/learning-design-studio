@@ -31,7 +31,7 @@
     groupSize:group(a.group),groupSizeSameAsSession:false,duration:duration(a.minutes),
     tutorAvailable:String(bool(a.teacher)),onlineActivity:String(modeOnline(a.mode)),
     syncActivity:String(/face to face|in.person|synchronous|حضوري|متزامن/i.test(String(a.mode||""))),
-    resources:[],description:String(a.resource||"")}],isCustom:true
+    resources:[],description:[String(a.resource||""),...(a.attachments||[]).filter(x=>x.kind==="link"&&/^https:\/\//i.test(x.url||"")).map(x=>String(x.title||"Resource")+": "+x.url),...(a.attachments||[]).filter(x=>x.kind==="file").map(x=>"Local file (not transferred): "+String(x.name||x.title||"resource"))].filter(Boolean).join("\n")}],isCustom:true
   }));
   const total=d.activities.reduce((s,a)=>s+Number(a.minutes),0);
   return {name:String(d.module),type:"session",author:String(opts.author||""),
